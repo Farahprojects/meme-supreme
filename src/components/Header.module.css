@@ -1,0 +1,71 @@
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+}
+
+.navContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.logo {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+}
+
+.navLinks {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.link {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: color var(--transition-fast);
+}
+
+.link:hover {
+    color: var(--text-primary);
+}
+
+.ctaButton {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 0.9rem;
+    transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+.ctaButton:hover {
+    transform: scale(1.05);
+    background: var(--text-secondary);
+}
+
+@media (max-width: 600px) {
+    .navLinks {
+        gap: 16px;
+    }
+
+    .link {
+        display: none;
+        /* Hide 'Explore feed' on very small screens to prioritize CTA */
+    }
+}

@@ -1,0 +1,317 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal::-webkit-scrollbar {
+    display: none;
+}
+
+.closeButton {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: background 0.2s;
+    z-index: 10;
+}
+
+.closeButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.content {
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.title {
+    font-size: 2rem;
+    color: white;
+    margin: 0;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-top: -16px;
+}
+
+/* Checkout Step Styles */
+.productSummary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.productInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.productName {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.productType {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.productPrice {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--accent-secondary);
+}
+
+.guestCheckoutBox {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.fakeApplePay {
+    background: white;
+    color: black;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-top: 12px;
+    cursor: pointer;
+}
+
+.fineprint {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: -8px;
+}
+
+/* Details Form Styles */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.inputGroup label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.inputGroup input,
+.inputGroup textarea {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 14px 16px;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.inputGroup input:focus,
+.inputGroup textarea:focus {
+    outline: none;
+    border-color: var(--accent-secondary);
+}
+
+.inputGroup textarea {
+    resize: vertical;
+}
+
+/* Loading/Generating Styles */
+.centerContent {
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255, 51, 102, 0.1);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 24px;
+}
+
+.pulsingText {
+    animation: pulse 1.5s ease-in-out infinite;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.5rem;
+}
+
+/* Result Styles */
+.resultContent {
+    align-items: center;
+}
+
+.resultImageContainer {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 0 30px rgba(255, 51, 102, 0.2);
+}
+
+.resultImage {
+    object-fit: cover;
+}
+
+.actionButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 16px;
+}
+
+/* Shared Button Styles */
+.primaryButton {
+    background: linear-gradient(135deg, var(--accent-primary), #ff0044);
+    color: white;
+    padding: 16px;
+    border-radius: var(--border-radius-sm);
+    font-size: 1.1rem;
+    font-weight: 700;
+    width: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.primaryButton:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4);
+}
+
+.secondaryButton {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 16px;
+    border-radius: var(--border-radius-sm);
+    font-size: 1.1rem;
+    font-weight: 600;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+.secondaryButton:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.textButton {
+    color: var(--text-secondary);
+    padding: 12px;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.textButton:hover {
+    color: white;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+        transform: scale(0.98);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0.6;
+        transform: scale(0.98);
+    }
+}

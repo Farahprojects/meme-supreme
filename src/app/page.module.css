@@ -1,0 +1,188 @@
+.main {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hero Section */
+.hero {
+    padding-top: 140px;
+    padding-bottom: 60px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+.heroContent {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+}
+
+.headline {
+    font-size: 5rem;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    color: var(--text-primary);
+    text-transform: uppercase;
+}
+
+.subtext {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 40px auto;
+    line-height: 1.6;
+}
+
+.heroCta {
+    background: white;
+    color: black;
+    font-size: 1.1rem;
+    font-weight: 800;
+    padding: 16px 40px;
+    border-radius: 100px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+.heroCta:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
+}
+
+/* Feed Section (Continuous Scroll) */
+.feedSection {
+    width: 100%;
+    padding: 20px 0 60px 0;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Subtle gradient masks for the edges of the scrolling feed */
+.feedSection::before,
+.feedSection::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100px;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.feedSection::before {
+    left: 0;
+    background: linear-gradient(to right, var(--bg-primary), transparent);
+}
+
+.feedSection::after {
+    right: 0;
+    background: linear-gradient(to left, var(--bg-primary), transparent);
+}
+
+.scrollTrack {
+    width: 100%;
+    overflow: hidden;
+}
+
+.scrollContent {
+    display: flex;
+    gap: 20px;
+    width: max-content;
+    animation: scroll 30s linear infinite;
+}
+
+.scrollContent:hover {
+    animation-play-state: paused;
+}
+
+.feedItem {
+    width: 250px;
+    flex-shrink: 0;
+}
+
+@keyframes scroll {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(calc(-50% - 10px));
+    }
+
+    /* -50% of the duplicated content plus half the gap */
+}
+
+/* Store Section */
+.storeSection {
+    padding: 80px 20px 120px 20px;
+}
+
+.storeHeader {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.sectionTitle {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.sectionSub {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 32px;
+}
+
+/* Footer */
+.footer {
+    padding: 40px 0;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: auto;
+}
+
+/* Responsive constraints */
+@media (max-width: 768px) {
+    .headline {
+        font-size: 3.5rem;
+    }
+
+    .subtext {
+        font-size: 1.1rem;
+        padding: 0 20px;
+    }
+
+    .feedItem {
+        width: 200px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .storeSection {
+        padding: 40px 20px 80px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .headline {
+        font-size: 2.8rem;
+    }
+
+    .hero {
+        padding-top: 100px;
+        padding-bottom: 40px;
+    }
+}
