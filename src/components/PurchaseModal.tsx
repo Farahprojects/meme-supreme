@@ -16,6 +16,12 @@ interface PurchaseModalProps {
 
 type Step = "checkout" | "details" | "generating" | "result";
 
+interface TargetPerson {
+    name: string;
+    date: string;
+    location: string;
+}
+
 const LOADING_MESSAGES = [
     "Initializing chaotic energy...",
     "Analyzing internet history...",
@@ -30,10 +36,8 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
     const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
 
     // Form state
-    const [targetNames, setTargetNames] = useState("");
+    const [targets, setTargets] = useState<TargetPerson[]>([{ name: "", date: "", location: "" }]);
     const [contextDesc, setContextDesc] = useState("");
-    const [optionalDate, setOptionalDate] = useState("");
-    const [optionalLocation, setOptionalLocation] = useState("");
 
     // Result state
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -48,10 +52,8 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
         if (isOpen) {
             setStep("checkout");
             setLoadingMsgIdx(0);
-            setTargetNames("");
+            setTargets([{ name: "", date: "", location: "" }]);
             setContextDesc("");
-            setOptionalDate("");
-            setOptionalLocation("");
             setGeneratedImage(null);
             setErrorMsg(null);
             setCurrentSessionId(null);
@@ -113,10 +115,10 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                 body: JSON.stringify({
                     session_id: sessionId,
                     product_type: selectedProduct?.type || 'Roast',
-                    target_names: targetNames,
+                    target_names: targets.map(t => t.name).filter(Boolean).join(", "),
                     context_description: contextDesc,
-                    optional_date: optionalDate,
-                    optional_location: optionalLocation
+                    optional_date: targets.filter(t => t.date || t.location).map(t => `${t.name || 'Target'}: ${t.date || 'Unknown Date'} in ${t.location || 'Unknown Loc'}`).join(" | "),
+                    optional_location: ""
                 })
             });
 
@@ -167,7 +169,7 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
             }
 
             if (attempts >= 5) {
-                setErrorMsg('Generation is taking longer than expected. Please try again or check back later.');
+                setErrorMsg('We are a little busy right now, try the button below.');
                 setStep("result");
                 setIsPolling(false);
             } else {
@@ -251,13 +253,63 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
 
                         <div className={styles.form}>
                             <div className={styles.inputGroup}>
-                                <label>Name(s)</label>
-                                <input
-                                    type="text"
-                                    placeholder="Who are we roasting?"
-                                    value={targetNames}
-                                    onChange={(e) => setTargetNames(e.target.value)}
-                                />
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <label style={{ margin: 0 }}>Targets (Name - Birth Date - City)</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setTargets([...targets, { name: "", date: "", location: "" }])}
+                                        style={{ background: 'transparent', border: '1px solid #777', color: '#ccc', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
+                                    >
+                                        + Add Person
+                                    </button>
+                                </div>
+                                {targets.map((target, idx) => (
+                                    <div key={idx} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                                        <input
+                                            type="text"
+                                            placeholder="Name"
+                                            value={target.name}
+                                            onChange={(e) => {
+                                                const newTargets = [...targets];
+                                                newTargets[idx].name = e.target.value;
+                                                setTargets(newTargets);
+                                            }}
+                                            style={{ flex: '1 1 30%', minWidth: 0 }}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="YYYY-MM-DD"
+                                            value={target.date}
+                                            onChange={(e) => {
+                                                const newTargets = [...targets];
+                                                newTargets[idx].date = e.target.value;
+                                                setTargets(newTargets);
+                                            }}
+                                            style={{ flex: '1 1 35%', minWidth: 0 }}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="City"
+                                            value={target.location}
+                                            onChange={(e) => {
+                                                const newTargets = [...targets];
+                                                newTargets[idx].location = e.target.value;
+                                                setTargets(newTargets);
+                                            }}
+                                            style={{ flex: '1 1 35%', minWidth: 0 }}
+                                        />
+                                        {targets.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setTargets(targets.filter((_, i) => i !== idx))}
+                                                style={{ background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px' }}
+                                                title="Remove"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
 
                             <div className={styles.inputGroup}>
@@ -270,29 +322,11 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                                 ></textarea>
                             </div>
 
-                            <div className={styles.inputGroup}>
-                                <label>Birth Date (Optional)</label>
-                                <input
-                                    type="text"
-                                    placeholder="DD/MM/YYYY"
-                                    value={optionalDate}
-                                    onChange={(e) => setOptionalDate(e.target.value)}
-                                />
-                            </div>
 
-                            <div className={styles.inputGroup}>
-                                <label>Birth Location (Optional)</label>
-                                <input
-                                    type="text"
-                                    placeholder="City (e.g. London)"
-                                    value={optionalLocation}
-                                    onChange={(e) => setOptionalLocation(e.target.value)}
-                                />
-                            </div>
 
                             <button
                                 className={styles.primaryButton}
-                                disabled={!targetNames || !contextDesc}
+                                disabled={!targets.some(t => t.name) || !contextDesc}
                                 onClick={startGeneration}
                             >
                                 Generate Meme
@@ -333,12 +367,35 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                             <div style={{ padding: '40px 30px', textAlign: 'center' }}>
                                 <h2 className={styles.title} style={{ fontSize: '1.5rem' }}>Generation Failed</h2>
                                 <p style={{ color: '#ff3366', marginTop: '1rem', marginBottom: '2rem' }}>{errorMsg}</p>
-                                <button
-                                    className={styles.secondaryButton}
-                                    onClick={() => setStep("details")}
-                                >
-                                    Try Again
-                                </button>
+                                {currentSessionId && errorMsg.includes("busy right now") ? (
+                                    <>
+                                        <button
+                                            className={styles.primaryButton}
+                                            onClick={() => {
+                                                setErrorMsg(null);
+                                                setStep("generating");
+                                                setIsMemeReadyBtnVisible(true);
+                                                setTimeout(handleMemeReady, 100);
+                                            }}
+                                            style={{ marginBottom: '1rem' }}
+                                        >
+                                            Check now
+                                        </button>
+                                        <button
+                                            className={styles.secondaryButton}
+                                            onClick={() => setStep("details")}
+                                        >
+                                            Restart with New Details
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button
+                                        className={styles.secondaryButton}
+                                        onClick={() => setStep("details")}
+                                    >
+                                        Try Again
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <>
