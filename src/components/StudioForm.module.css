@@ -18,10 +18,10 @@
     background: transparent;
     border: none;
     box-shadow: none;
-    max-width: 450px;
-    /* Keep generated images contained */
+    height: 85vh;
+    max-height: 800px;
     aspect-ratio: 9 / 16;
-    max-height: 75vh;
+    margin: 0 auto;
 }
 
 .content {
