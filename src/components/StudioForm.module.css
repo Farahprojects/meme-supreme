@@ -21,9 +21,7 @@
     height: 85vh;
     max-height: 800px;
     width: auto;
-    /* Allow aspect-ratio to determine width */
     max-width: 450px;
-    /* Force it narrower - the "same as it was" */
     aspect-ratio: 9 / 16;
     margin: 0 auto;
     overflow: visible;
@@ -328,9 +326,6 @@
 
 .resultImage {
     object-fit: cover;
-    transform: scale(1.2);
-    /* The missing 20% zoom */
-    transform-origin: center center;
 }
 
 .floatingActions {
