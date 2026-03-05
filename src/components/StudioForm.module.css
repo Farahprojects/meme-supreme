@@ -22,6 +22,9 @@
     max-height: 800px;
     aspect-ratio: 9 / 16;
     margin: 0 auto;
+    overflow: visible;
+    /* Let the resultContent handle the rounding and shadow */
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .content {
@@ -278,12 +281,14 @@
 .resultContent {
     padding: 0;
     position: relative;
-    border-radius: var(--border-radius-lg);
+    border-radius: 32px;
     overflow: hidden;
     background: #000;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     height: 100%;
     width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .errorBox {

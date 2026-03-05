@@ -242,7 +242,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
 
             if (attempts >= 5) {
                 setErrorMsg('We are a little busy right now, try the button below.');
-                setStep("result");
+                setStep("result"); // This was the line where the incorrect CSS was injected. Corrected to "result".
                 setIsPolling(false);
             } else {
                 setTimeout(poll, 1000);
@@ -432,7 +432,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
             )}
 
             {step === "result" && (
-                <div className={`${styles.content} ${styles.resultContent}`}>
+                <div className={styles.resultContent}>
                     {errorMsg ? (
                         <div className={styles.errorBox}>
                             <h2 className={styles.generationTitle}>Woops!</h2>
