@@ -30,7 +30,8 @@
 .logoLink {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 4px;
+    /* Integrated 'M' icon gap */
     text-decoration: none;
     color: inherit;
     transition: transform var(--transition-fast);
@@ -41,7 +42,9 @@
 }
 
 .logoIcon {
-    border-radius: 8px;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    /* Aligns visually as a letter */
     /* Smooth corners for the image */
     /* Removed purple glow to better match the new white logo */
 }
