@@ -395,13 +395,15 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                             >
                                 {isCheckingOut ? "Loading..." : "Purchase & Generate ($1.00)"}
                             </button>
-                            <button
-                                className={styles.secondaryButton}
-                                onClick={handleBypassPay}
-                                disabled={!targets.some(t => t.name) || !contextDesc}
-                            >
-                                Bypass Pay (Dev Mode)
-                            </button>
+                            {process.env.NODE_ENV === 'development' && (
+                                <button
+                                    className={styles.secondaryButton}
+                                    onClick={handleBypassPay}
+                                    disabled={!targets.some(t => t.name) || !contextDesc}
+                                >
+                                    Bypass Pay (Dev Mode)
+                                </button>
+                            )}
                             <p className={styles.fineprint}>Secure checkout powered by Stripe. Apple Pay & Google Pay supported.</p>
                         </div>
                     </div>
