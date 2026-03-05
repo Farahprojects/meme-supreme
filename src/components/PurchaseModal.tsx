@@ -306,6 +306,17 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct, initia
                         >
                             {isCheckingOut ? "Loading..." : `Buy for ${selectedProduct.price}`}
                         </button>
+                        <button
+                            className={styles.secondaryButton}
+                            style={{ marginTop: '12px', width: '100%', opacity: 0.7 }}
+                            onClick={() => {
+                                const testId = `test-${crypto.randomUUID()}`;
+                                setOrderId(testId);
+                                setStep("details");
+                            }}
+                        >
+                            Bypass Pay (Dev Mode)
+                        </button>
                         <p className={styles.fineprint}>Secure checkout powered by Stripe. Apple Pay & Google Pay supported.</p>
                     </div>
                 )}
