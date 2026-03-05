@@ -30,8 +30,8 @@
 .logoLink {
     display: flex;
     align-items: center;
-    gap: 2px;
-    /* Integrated 'M' icon tight gap */
+    gap: 0px;
+    /* Integrated 'M' icon - no gap */
     text-decoration: none;
     color: inherit;
     transition: transform var(--transition-fast);
@@ -51,6 +51,11 @@
 
 .logoText {
     display: inline-block;
+}
+
+.logoText span {
+    margin-left: 8px;
+    /* Extra space for 'Supreme' */
 }
 
 .navLinks {

@@ -15,7 +15,7 @@ export default function Header({ onCreateClick }: HeaderProps) {
                 <div className={styles.logo}>
                     <Link href="/" className={styles.logoLink}>
                         <Image src="/assets/logo_white.png" alt="Meme Supreme Icon" width={32} height={32} className={styles.logoIcon} />
-                        <span className={styles.logoText}>eme <span className="text-gradient">Supreme</span></span>
+                        <span className={styles.logoText}>eme &nbsp; <span className="text-gradient">Supreme</span></span>
                     </Link>
                 </div>
                 <nav className={styles.navLinks}>
