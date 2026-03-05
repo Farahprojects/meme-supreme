@@ -35,7 +35,7 @@ export default function Header({ onCreateClick }: HeaderProps) {
                             }
                         }}
                     >
-                        Create Meme
+                        Create
                     </button>
                 </nav>
             </div>

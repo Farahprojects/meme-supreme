@@ -159,7 +159,7 @@ export default function Home() {
               </div>
               <h3 className={styles.emptyVaultTitle}>Your vault is empty</h3>
               <p className={styles.emptyVaultSub}>Create your first meme to start your collection.</p>
-              <button className={styles.emptyVaultCta}>Create Meme</button>
+              <button className={styles.emptyVaultCta}>Create</button>
             </div>
           ) : (
             history.map((meme) => (
