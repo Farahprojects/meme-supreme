@@ -61,7 +61,7 @@ export default function Home() {
               Meme <span className="text-gradient">Your Life.</span>
             </h1>
             <p className={styles.subtext}>
-              AI-generated memes for every vibe. Funny, Roast, Sweet, or Bold we've got you covered.
+              AI-generated memes for every vibe. Funny, Roast, Sweet, or Bold we&apos;ve got you covered.
             </p>
             <button
               className={styles.heroCta}
@@ -147,7 +147,15 @@ export default function Home() {
                 onClick={() => setViewerMeme(meme)}
               >
                 <div className={styles.vaultImageContainer}>
-                  <img src={meme.url} alt="Saved meme" className={styles.vaultImage} />
+                  <Image
+                    src={meme.url}
+                    alt="Saved meme"
+                    className={styles.vaultImage}
+                    width={500}
+                    height={500}
+                    style={{ objectFit: 'cover' }}
+                    unoptimized
+                  />
                   <div className={styles.vaultBadge}>{meme.tone}</div>
                   <div className={styles.vaultCardOverlay}>
                     <a

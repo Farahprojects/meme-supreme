@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useMemeHistory } from "@/hooks/useMemeHistory";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import styles from "./PurchaseModal.module.css";
 
 interface PurchaseModalProps {
@@ -73,7 +74,7 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
     }, [isOpen]);
 
     // Generation state management via refs (prevents re-render teardowns)
-    const supabaseClientRef = useRef<any>(null);
+    const supabaseClientRef = useRef<SupabaseClient | null>(null);
 
     // Handle loading text pulsing & Meme Ready Button Timeout
     useEffect(() => {
@@ -111,7 +112,6 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
             }
 
             // 1. Initialize Supabase
-            const { createClient } = require('@supabase/supabase-js');
             const client = createClient(supabaseUrl, anonKey);
             supabaseClientRef.current = client;
 
@@ -138,7 +138,7 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                 try {
                     const errorJson = JSON.parse(errorText);
                     throw new Error(errorJson.error || 'Generation failed');
-                } catch (parseError) {
+                } catch {
                     throw new Error(`Generation failed: ${errorText}`);
                 }
             }
@@ -165,7 +165,8 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
             attempts++;
             try {
                 console.log(`Polling attempt ${attempts} for session:`, currentSessionId);
-                const { data, error } = await supabaseClientRef.current
+                if (!supabaseClientRef.current) return;
+                const { data } = await supabaseClientRef.current
                     .from('memeroast_images')
                     .select('status, image_url')
                     .eq('session_id', currentSessionId)
@@ -283,7 +284,7 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                     <div className={styles.content}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
                             <Image src="/assets/logo_white.png" alt="Meme Supreme Icon" width={32} height={32} />
-                            <p style={{ margin: 0, color: 'white', fontWeight: 'bold', fontSize: '1.2rem' }}>Explain the chaos. We'll meme it.</p>
+                            <p style={{ margin: 0, color: 'white', fontWeight: 'bold', fontSize: '1.2rem' }}>Explain the chaos. We&apos;ll meme it.</p>
                         </div>
 
                         <div className={styles.form}>

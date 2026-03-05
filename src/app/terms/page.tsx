@@ -16,7 +16,7 @@ export default function TermsAndPolicies() {
                     <h1 className={styles.pageTitle}>
                         Terms <span className="text-gradient">& Policies</span>
                     </h1>
-                    <p className={styles.subtitle}>The rules of the roast. Read 'em and weep.</p>
+                    <p className={styles.subtitle}>The rules of the roast. Read &apos;em and weep.</p>
                 </div>
 
                 <div className={styles.termsCard}>
