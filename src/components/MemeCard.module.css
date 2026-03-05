@@ -16,9 +16,8 @@
 
 .imageWrapper {
     position: relative;
-    width: 100%;
-    /* Assuming a relatively square aspect ratio for memes by default, can be overridden by grid */
-    aspect-ratio: 1 / 1;
+    /* Fixed 9:16 aspect ratio for mobile-first meme format */
+    aspect-ratio: 9 / 16;
 }
 
 .image {

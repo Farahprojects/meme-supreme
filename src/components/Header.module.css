@@ -27,6 +27,29 @@
     letter-spacing: -0.02em;
 }
 
+.logoLink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform var(--transition-fast);
+}
+
+.logoLink:hover {
+    transform: scale(1.02);
+}
+
+.logoIcon {
+    border-radius: 8px;
+    /* Smooth corners for the image */
+    /* Removed purple glow to better match the new white logo */
+}
+
+.logoText {
+    display: inline-block;
+}
+
 .navLinks {
     display: flex;
     align-items: center;

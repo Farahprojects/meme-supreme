@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { useMemeHistory } from "@/hooks/useMemeHistory";
 import styles from "./PurchaseModal.module.css";
 
 interface PurchaseModalProps {
@@ -19,16 +20,20 @@ type Step = "checkout" | "details" | "generating" | "result";
 interface TargetPerson {
     name: string;
     date: string;
-    location: string;
 }
+
+
+type Tone = "Funny" | "Sweet" | "Roast" | "Bold";
+
 
 const LOADING_MESSAGES = [
     "Initializing chaotic energy...",
     "Analyzing internet history...",
-    "Finding roast material...",
-    "Applying emotional damage...",
-    "Generating meme...",
+    "Brewing the perfect vibe...",
+    "Applying the personality...",
+    "Generating meme supreme...",
     "Almost done..."
+
 ];
 
 export default function PurchaseModal({ isOpen, onClose, selectedProduct }: PurchaseModalProps) {
@@ -36,8 +41,12 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
     const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
 
     // Form state
-    const [targets, setTargets] = useState<TargetPerson[]>([{ name: "", date: "", location: "" }]);
+    const [targets, setTargets] = useState<TargetPerson[]>([{ name: "", date: "" }]);
     const [contextDesc, setContextDesc] = useState("");
+    const [selectedTone, setSelectedTone] = useState<Tone>("Roast");
+    const [showHint, setShowHint] = useState(false);
+
+    const { addMeme } = useMemeHistory();
 
     // Result state
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -52,8 +61,9 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
         if (isOpen) {
             setStep("checkout");
             setLoadingMsgIdx(0);
-            setTargets([{ name: "", date: "", location: "" }]);
+            setTargets([{ name: "", date: "" }]);
             setContextDesc("");
+            setSelectedTone("Roast");
             setGeneratedImage(null);
             setErrorMsg(null);
             setCurrentSessionId(null);
@@ -117,19 +127,27 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                     product_type: selectedProduct?.type || 'Roast',
                     target_names: targets.map(t => t.name).filter(Boolean).join(", "),
                     context_description: contextDesc,
-                    optional_date: targets.filter(t => t.date || t.location).map(t => `${t.name || 'Target'}: ${t.date || 'Unknown Date'} in ${t.location || 'Unknown Loc'}`).join(" | "),
+                    tone: selectedTone.toLowerCase(),
+                    optional_date: targets.filter(t => t.date).map(t => `${t.name || 'Target'}: ${t.date || 'Unknown Date'}`).join(" | "),
                     optional_location: ""
                 })
             });
 
-            if (!res.ok) throw new Error(`Generation failed: ${await res.text()}`);
+            if (!res.ok) {
+                const errorText = await res.text();
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    throw new Error(errorJson.error || 'Generation failed');
+                } catch (parseError) {
+                    throw new Error(`Generation failed: ${errorText}`);
+                }
+            }
+
             const data = await res.json();
 
             if (!data.success) {
                 throw new Error(data.error || 'Failed to dispatch generation task');
             }
-
-
 
         } catch (e) {
             console.error('Failed to dispatch generation task:', e);
@@ -157,6 +175,21 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                     setGeneratedImage(data.image_url);
                     setStep("result");
                     setIsPolling(false);
+
+                    // Save to Meme Vault
+                    addMeme({
+                        id: currentSessionId,
+                        url: data.image_url,
+                        tone: selectedTone.toUpperCase(),
+                        targets: targets.map(t => t.name).filter(Boolean).join(", "),
+                        timestamp: Date.now()
+                    });
+
+                    // Trigger Auto-download
+                    setTimeout(() => {
+                        forceDownload(data.image_url);
+                    }, 500);
+
                     return;
                 } else if (data?.status === 'failed') {
                     setErrorMsg('Backend explicitly flagged status as failed.');
@@ -248,20 +281,34 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                 {/* Step 2: Input Details */}
                 {step === "details" && (
                     <div className={styles.content}>
-                        <h2 className={styles.title}>Supply the Target</h2>
-                        <p className={styles.subtitle}>Give us the ammo for the {selectedProduct.title}.</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                            <Image src="/assets/logo_white.png" alt="Meme Supreme Icon" width={32} height={32} />
+                            <p style={{ margin: 0, color: 'white', fontWeight: 'bold', fontSize: '1.2rem' }}>Explain the chaos. We'll meme it.</p>
+                        </div>
 
                         <div className={styles.form}>
                             <div className={styles.inputGroup}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                    <label style={{ margin: 0 }}>Targets (Name - Birth Date - City)</label>
-                                    <button
-                                        type="button"
-                                        onClick={() => setTargets([...targets, { name: "", date: "", location: "" }])}
-                                        style={{ background: 'transparent', border: '1px solid #777', color: '#ccc', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
-                                    >
-                                        + Add Person
-                                    </button>
+                                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'flex-end' }}>
+                                    <label style={{ flex: '1 1 50%', margin: 0, fontSize: '0.85rem' }}>Name :</label>
+                                    <div style={{ flex: '1 1 50%', position: 'relative' }}>
+                                        <label style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem' }}>
+                                            Optional
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowHint(!showHint)}
+                                                style={{ background: 'none', border: 'none', color: '#BFFF00', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                                            >
+                                                Hint ✨
+                                            </button>
+                                        </label>
+                                        {showHint && (
+                                            <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: '8px', background: '#111', border: '1px solid var(--border-color)', padding: '12px', borderRadius: '8px', width: '220px', zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
+                                                <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>Birthday (optional)</p>
+                                                <p style={{ margin: 0, fontSize: '0.75rem', color: '#aaa', lineHeight: 1.4 }}>We use this to add astrology insights to your meme.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {targets.length > 1 && <div style={{ width: '24px' }}></div>}
                                 </div>
                                 {targets.map((target, idx) => (
                                     <div key={idx} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
@@ -274,7 +321,7 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                                                 newTargets[idx].name = e.target.value;
                                                 setTargets(newTargets);
                                             }}
-                                            style={{ flex: '1 1 30%', minWidth: 0 }}
+                                            style={{ flex: '1 1 50%', minWidth: 0 }}
                                         />
                                         <input
                                             type="text"
@@ -285,19 +332,9 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                                                 newTargets[idx].date = e.target.value;
                                                 setTargets(newTargets);
                                             }}
-                                            style={{ flex: '1 1 35%', minWidth: 0 }}
+                                            style={{ flex: '1 1 50%', minWidth: 0 }}
                                         />
-                                        <input
-                                            type="text"
-                                            placeholder="City"
-                                            value={target.location}
-                                            onChange={(e) => {
-                                                const newTargets = [...targets];
-                                                newTargets[idx].location = e.target.value;
-                                                setTargets(newTargets);
-                                            }}
-                                            style={{ flex: '1 1 35%', minWidth: 0 }}
-                                        />
+
                                         {targets.length > 1 && (
                                             <button
                                                 type="button"
@@ -310,6 +347,13 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                                         )}
                                     </div>
                                 ))}
+                                <button
+                                    type="button"
+                                    onClick={() => setTargets([...targets, { name: "", date: "" }])}
+                                    style={{ background: 'transparent', border: '1px solid var(--border-color)', color: '#aaa', padding: '6px 14px', borderRadius: '100px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, display: 'inline-block', marginTop: '8px' }}
+                                >
+                                    + Add Person
+                                </button>
                             </div>
 
                             <div className={styles.inputGroup}>
@@ -321,6 +365,23 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                                     onChange={(e) => setContextDesc(e.target.value)}
                                 ></textarea>
                             </div>
+
+                            <div className={styles.inputGroup}>
+                                <label>Meme Tone</label>
+                                <div className={styles.toneSelector}>
+                                    {(["Funny", "Sweet", "Roast", "Bold"] as Tone[]).map((tone) => (
+                                        <button
+                                            key={tone}
+                                            type="button"
+                                            className={`${styles.toneOption} ${selectedTone === tone ? styles.activeTone : ""}`}
+                                            onClick={() => setSelectedTone(tone)}
+                                        >
+                                            {tone}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
 
 
 
@@ -365,29 +426,28 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                     <div className={`${styles.content} ${styles.resultContent}`}>
                         {errorMsg ? (
                             <div style={{ padding: '40px 30px', textAlign: 'center' }}>
-                                <h2 className={styles.title} style={{ fontSize: '1.5rem' }}>Generation Failed</h2>
-                                <p style={{ color: '#ff3366', marginTop: '1rem', marginBottom: '2rem' }}>{errorMsg}</p>
+                                <h2 className={styles.title} style={{ fontSize: '1.5rem' }}>Woops!</h2>
+                                <p style={{ color: '#ffffff', marginTop: '1rem', marginBottom: '2rem' }}>{errorMsg}</p>
+                                {errorMsg.includes("not allowed") && (
+                                    <div style={{ marginBottom: '2rem' }}>
+                                        <a href="/terms" style={{ color: 'var(--brand-primary)', textDecoration: 'underline' }}>
+                                            Read Terms & Policies
+                                        </a>
+                                    </div>
+                                )}
                                 {currentSessionId && errorMsg.includes("busy right now") ? (
-                                    <>
-                                        <button
-                                            className={styles.primaryButton}
-                                            onClick={() => {
-                                                setErrorMsg(null);
-                                                setStep("generating");
-                                                setIsMemeReadyBtnVisible(true);
-                                                setTimeout(handleMemeReady, 100);
-                                            }}
-                                            style={{ marginBottom: '1rem' }}
-                                        >
-                                            Check now
-                                        </button>
-                                        <button
-                                            className={styles.secondaryButton}
-                                            onClick={() => setStep("details")}
-                                        >
-                                            Restart with New Details
-                                        </button>
-                                    </>
+                                    <button
+                                        className={styles.primaryButton}
+                                        onClick={() => {
+                                            setErrorMsg(null);
+                                            setStep("generating");
+                                            setIsMemeReadyBtnVisible(true);
+                                            setTimeout(handleMemeReady, 100);
+                                        }}
+                                        style={{ marginBottom: '1rem' }}
+                                    >
+                                        Check now
+                                    </button>
                                 ) : (
                                     <button
                                         className={styles.secondaryButton}

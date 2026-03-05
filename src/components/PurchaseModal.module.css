@@ -167,11 +167,14 @@
 .inputGroup textarea {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    padding: 14px 16px;
+    border-radius: 100px;
+    /* Pill shape */
+    padding: 10px 20px;
+    /* Slimmer */
     color: white;
     font-family: 'Inter', sans-serif;
-    font-size: 1rem;
+    font-size: 0.95rem;
+    /* Slightly smaller for slim look */
     transition: border-color 0.2s;
 }
 
@@ -183,7 +186,46 @@
 
 .inputGroup textarea {
     resize: vertical;
+    border-radius: 24px;
+    /* Soft rounded for textarea while keeping it practical */
 }
+
+.toneSelector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.toneOption {
+    padding: 8px 12px;
+    /* Slimmer */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 100px;
+    /* Pill shape */
+    color: var(--text-secondary);
+    font-weight: 600;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.toneOption:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.activeTone {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
+}
+
+.activeTone:hover {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
 
 /* Loading/Generating Styles */
 .centerContent {
@@ -207,6 +249,7 @@
     animation: pulse 1.5s ease-in-out infinite;
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     font-size: 1.5rem;
 }
@@ -270,9 +313,12 @@
 .primaryButton {
     background: linear-gradient(135deg, var(--accent-primary), #ff0044);
     color: white;
-    padding: 16px;
-    border-radius: var(--border-radius-sm);
-    font-size: 1.1rem;
+    padding: 12px;
+    /* Slimmer */
+    border-radius: 100px;
+    /* Pill shape */
+    font-size: 1rem;
+    /* Slightly smaller */
     font-weight: 700;
     width: 100%;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -286,9 +332,11 @@
 .secondaryButton {
     background: rgba(255, 255, 255, 0.1);
     color: white;
-    padding: 16px;
-    border-radius: var(--border-radius-sm);
-    font-size: 1.1rem;
+    padding: 12px;
+    /* Slimmer */
+    border-radius: 100px;
+    /* Pill shape */
+    font-size: 1rem;
     font-weight: 600;
     width: 100%;
     transition: background 0.2s;

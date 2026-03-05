@@ -17,8 +17,9 @@
 .imageContainer {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 9 / 16;
     overflow: hidden;
+    background: #000;
 }
 
 .image {
@@ -47,33 +48,47 @@
 }
 
 .content {
-    padding: 24px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    position: relative;
+    z-index: 10;
+    margin-top: -30px;
+    /* Reduced overlap to show more image */
+    background: rgba(10, 10, 10, 0.85);
+    /* Slightly more opaque for readability */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.5);
 }
 
 .title {
-    font-size: 1.5rem;
-    margin-bottom: 8px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 4px;
     color: var(--text-primary);
 }
 
 .description {
     color: var(--text-secondary);
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin-bottom: 24px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 20px;
     flex-grow: 1;
 }
 
 .button {
     width: 100%;
-    padding: 16px;
+    padding: 8px 16px;
+    /* Thinner padding */
     background: linear-gradient(135deg, var(--accent-primary), #ff0044);
     color: white;
-    border-radius: var(--border-radius-md);
-    font-size: 1.1rem;
+    border-radius: 100px;
+    /* Full pill shape */
+    font-size: 0.9rem;
     font-weight: 700;
     transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     margin-top: auto;
@@ -86,4 +101,32 @@
 
 .button:active {
     transform: scale(0.98);
+}
+
+@media (max-width: 600px) {
+    .content {
+        padding: 12px;
+        margin-top: -35px;
+    }
+
+    .title {
+        font-size: 0.95rem;
+    }
+
+    .description {
+        font-size: 0.75rem;
+        margin-bottom: 12px;
+    }
+
+    .button {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+
+    .priceTag {
+        top: 10px;
+        right: 10px;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+    }
 }

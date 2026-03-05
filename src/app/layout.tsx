@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MemeRoast | Get Roasted",
+  title: "MemeSupreme | Get Roasted",
   description: "AI-generated memes about you, your friends, or your relationship.",
 };
 
