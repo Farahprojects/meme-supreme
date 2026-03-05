@@ -145,7 +145,7 @@
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid var(--border-color);
     border-radius: 100px;
-    padding: 12px 20px;
+    padding: 9px 18px;
     color: white;
     font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
@@ -177,7 +177,7 @@
     background: transparent;
     border: 1px solid var(--border-color);
     color: #aaa;
-    padding: 8px 16px;
+    padding: 6px 14px;
     border-radius: 100px;
     cursor: pointer;
     font-size: 0.8rem;
@@ -200,7 +200,7 @@
 }
 
 .toneOption {
-    padding: 10px 12px;
+    padding: 7px 12px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-color);
     border-radius: 100px;
@@ -367,7 +367,7 @@
 .primaryButton {
     background: linear-gradient(135deg, var(--accent-primary), #ff0044);
     color: white;
-    padding: 14px;
+    padding: 10px;
     border-radius: 100px;
     font-size: 1.05rem;
     font-weight: 700;
@@ -395,7 +395,7 @@
 .secondaryButton {
     background: rgba(255, 255, 255, 0.1);
     color: white;
-    padding: 12px;
+    padding: 8px;
     border-radius: 100px;
     font-size: 1rem;
     font-weight: 600;
