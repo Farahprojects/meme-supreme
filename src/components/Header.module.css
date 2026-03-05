@@ -30,8 +30,8 @@
 .logoLink {
     display: flex;
     align-items: center;
-    gap: 4px;
-    /* Integrated 'M' icon gap */
+    gap: 2px;
+    /* Integrated 'M' icon tight gap */
     text-decoration: none;
     color: inherit;
     transition: transform var(--transition-fast);
