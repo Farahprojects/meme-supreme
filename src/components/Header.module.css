@@ -1,13 +1,7 @@
 .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: relative;
     height: 70px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--glass-border);
+    background: var(--bg-primary);
     z-index: 100;
     display: flex;
     align-items: center;
