@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import MemeCard from "@/components/MemeCard";
-import ProductCard from "@/components/ProductCard";
-import PurchaseModal from "@/components/PurchaseModal";
+import StudioForm from "@/components/StudioForm";
 import { useMemeHistory, MemeRecord } from "@/hooks/useMemeHistory";
 import styles from "./page.module.css";
 import Image from "next/image";
@@ -21,32 +20,11 @@ const FEED_MEMES = [
   { id: 8, type: "Custom Funny", url: "/assets/memes/singel.jpg" },
 ];
 
-// Mock data for the store
-const STORE_PRODUCTS = [
-  {
-    id: "single",
-    title: "Brand Roast",
-    type: "Personal Attack",
-    description: "Get ruthlessly evaluated based on your name, vibe, and any other info you provide.",
-    price: "$1.00",
-    previewUrl: "/assets/memes/brand.jpg"
-  },
-  {
-    id: "couple",
-    title: "Couple Roast",
-    type: "Relationship Tester",
-    description: "Find out who is settling and why your relationship dynamic is fundamentally flawed.",
-    price: "$1.00",
-    previewUrl: "/assets/memes/1770966675947-ff4927ed-e1df-416a-a6c8-7ab443f0ad74.jpg"
-  }
-];
-
 export default function Home() {
-  const [selectedProduct, setSelectedProduct] = useState<typeof STORE_PRODUCTS[0] | null>(null);
   const [viewerMeme, setViewerMeme] = useState<MemeRecord | null>(null);
   const { history, removeMeme, clearHistory } = useMemeHistory();
   const [initialOrderId, setInitialOrderId] = useState<string | undefined>();
-  const [initialStep, setInitialStep] = useState<"checkout" | "details" | "generating" | "result" | undefined>();
+  const [initialStep, setInitialStep] = useState<"details" | "generating" | "result" | undefined>();
 
   // Detect Stripe Success Return
   useEffect(() => {
@@ -56,14 +34,17 @@ export default function Home() {
       const orderId = urlParams.get("order_id");
 
       if (isSuccess && orderId) {
-        // Find the default product or map it from the URL if needed later
-        setSelectedProduct(STORE_PRODUCTS[0]);
         setInitialOrderId(orderId);
-        setInitialStep("details");
+        setInitialStep("generating");
 
         // Clean up URL
         const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
         window.history.replaceState({ path: newUrl }, '', newUrl);
+
+        // Auto-scroll to the store form so they see it loading
+        setTimeout(() => {
+          document.getElementById("store")?.scrollIntoView({ behavior: "smooth" });
+        }, 300);
       }
     }
   }, []);
@@ -73,7 +54,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <Header onCreateClick={() => setSelectedProduct(STORE_PRODUCTS[0])} />
+      <Header />
 
       {/* Hero Section */}
       <section className={styles.hero}>
@@ -119,18 +100,11 @@ export default function Home() {
           <p className={styles.sectionSub}>Funny. Roast. Sweet. Bold. Any vibe for just $1.</p>
         </div>
 
-        <div className={styles.grid}>
-          {STORE_PRODUCTS.map((product) => (
-            <ProductCard
-              key={product.id}
-              title={product.title}
-              description={product.description}
-              price={product.price}
-              previewUrl={product.previewUrl}
-              onSelect={() => setSelectedProduct(product)}
-            />
-          ))}
-        </div>
+        {/* The new inline Studio Form */}
+        <StudioForm
+          initialOrderId={initialOrderId}
+          initialStep={initialStep}
+        />
       </section>
 
       {/* Meme Vault Section */}
@@ -152,7 +126,7 @@ export default function Home() {
           {history.length === 0 ? (
             <div
               className={styles.emptyVaultCard}
-              onClick={() => setSelectedProduct(STORE_PRODUCTS[0])}
+              onClick={() => document.getElementById("store")?.scrollIntoView({ behavior: "smooth" })}
             >
               <div className={styles.emptyVaultIcon}>
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -215,7 +189,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Meme Viewer Popup (Just for viewing image) */}
+      {/* Meme Viewer Popup */}
       {viewerMeme && (
         <div className={styles.viewerOverlay} onClick={() => setViewerMeme(null)}>
           <div className={styles.viewerModal} onClick={(e) => e.stopPropagation()}>
@@ -232,19 +206,6 @@ export default function Home() {
           <p>© 2026 MemeSupreme. All rights reserved. No refunds for hurt feelings.</p>
         </div>
       </footer>
-
-      {/* Purchase Flow Modal */}
-      <PurchaseModal
-        isOpen={!!selectedProduct}
-        onClose={() => {
-          setSelectedProduct(null);
-          setInitialOrderId(undefined);
-          setInitialStep(undefined);
-        }}
-        selectedProduct={selectedProduct}
-        initialOrderId={initialOrderId}
-        initialStep={initialStep}
-      />
     </main>
   );
 }

@@ -1,67 +1,26 @@
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    animation: fadeIn 0.3s ease;
-}
-
-.modal {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
+.container {
     width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
+    max-width: 600px;
+    margin: 0 auto;
+    background: rgba(20, 20, 20, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    overflow: hidden;
     position: relative;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: fadeIn 0.4s ease;
 }
 
-.modal[data-step="result"] {
+/* Result step can have a different aspect ratio / setup */
+.container[data-step="result"] {
     background: transparent;
     border: none;
     box-shadow: none;
-    height: 85vh;
-    max-height: 800px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal::-webkit-scrollbar {
-    display: none;
-}
-
-.closeButton {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    transition: background 0.2s;
-    z-index: 10;
-}
-
-.closeButton:hover {
-    background: rgba(255, 255, 255, 0.2);
+    max-width: 450px;
+    /* Keep generated images contained */
+    aspect-ratio: 9 / 16;
 }
 
 .content {
@@ -71,77 +30,18 @@
     gap: 24px;
 }
 
+.headerBox {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
 .title {
-    font-size: 2rem;
+    font-size: 1.3rem;
     color: white;
     margin: 0;
-}
-
-.subtitle {
-    color: var(--text-secondary);
-    font-size: 1rem;
-    margin-top: -16px;
-}
-
-/* Checkout Step Styles */
-.productSummary {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--border-radius-sm);
-    border: 1px solid var(--border-color);
-}
-
-.productInfo {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.productName {
     font-weight: 700;
-    font-size: 1.2rem;
-}
-
-.productType {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-}
-
-.productPrice {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 800;
-    font-size: 1.5rem;
-    color: var(--accent-secondary);
-}
-
-.guestCheckoutBox {
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    padding: 20px;
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.fakeApplePay {
-    background: white;
-    color: black;
-    padding: 12px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin-top: 12px;
-    cursor: pointer;
-}
-
-.fineprint {
-    text-align: center;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-top: -8px;
 }
 
 /* Details Form Styles */
@@ -157,37 +57,134 @@
     gap: 8px;
 }
 
-.inputGroup label {
+.labelsRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 4px;
+}
+
+.flexLabel {
+    flex: 1 1 50%;
+    margin: 0;
+    font-size: 0.85rem;
     font-weight: 600;
-    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
-.inputGroup input,
+.flexLabelRight {
+    flex: 1 1 50%;
+    position: relative;
+}
+
+.hintLabel {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.hintButton {
+    background: none;
+    border: none;
+    color: #BFFF00;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.hintTooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 8px;
+    background: #111;
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    border-radius: 8px;
+    width: 220px;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.hintTooltipTitle {
+    margin: 0 0 4px 0;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+}
+
+.hintTooltipText {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #aaa;
+    line-height: 1.4;
+}
+
+.emptySpacer {
+    width: 24px;
+}
+
+.targetRow {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.targetInput,
 .inputGroup textarea {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid var(--border-color);
     border-radius: 100px;
-    /* Pill shape */
-    padding: 10px 20px;
-    /* Slimmer */
+    padding: 12px 20px;
     color: white;
     font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
-    /* Slightly smaller for slim look */
     transition: border-color 0.2s;
+    width: 100%;
 }
 
-.inputGroup input:focus,
+.inputGroup textarea {
+    resize: vertical;
+    border-radius: 16px;
+}
+
+.targetInput:focus,
 .inputGroup textarea:focus {
     outline: none;
     border-color: var(--accent-secondary);
 }
 
-.inputGroup textarea {
-    resize: vertical;
-    border-radius: 24px;
-    /* Soft rounded for textarea while keeping it practical */
+.removeTargetBtn {
+    background: transparent;
+    border: none;
+    color: #ff4444;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0 4px;
+}
+
+.addTargetBtn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: #aaa;
+    padding: 8px 16px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    align-self: flex-start;
+    margin-top: 4px;
+    transition: all 0.2s;
+}
+
+.addTargetBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
 }
 
 .toneSelector {
@@ -197,16 +194,15 @@
 }
 
 .toneOption {
-    padding: 8px 12px;
-    /* Slimmer */
+    padding: 10px 12px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-color);
     border-radius: 100px;
-    /* Pill shape */
     color: var(--text-secondary);
     font-weight: 600;
     transition: all 0.2s ease;
     text-align: center;
+    cursor: pointer;
 }
 
 .toneOption:hover {
@@ -226,6 +222,19 @@
     border-color: var(--accent-primary);
 }
 
+.actionBox {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fineprint {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
 
 /* Loading/Generating Styles */
 .centerContent {
@@ -245,13 +254,23 @@
     margin-bottom: 24px;
 }
 
+.generationTitle {
+    font-size: 1.5rem;
+    color: white;
+    margin: 0;
+}
+
 .pulsingText {
     animation: pulse 1.5s ease-in-out infinite;
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-size: 1.5rem;
+}
+
+.readyBox {
+    margin-top: 2rem;
+    width: 100%;
 }
 
 /* Result Styles */
@@ -263,7 +282,32 @@
     background: #000;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     height: 100%;
-    aspect-ratio: 9 / 16;
+    width: 100%;
+}
+
+.errorBox {
+    padding: 40px 30px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.errorText {
+    color: #ffffff;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+}
+
+.errorTerms {
+    margin-bottom: 2rem;
+}
+
+.errorTerms a {
+    color: var(--brand-primary);
+    text-decoration: underline;
 }
 
 .resultImageContainer {
@@ -300,7 +344,7 @@
     justify-content: center;
     color: white;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.2s ease;
 }
 
 .iconButton:hover {
@@ -313,15 +357,24 @@
 .primaryButton {
     background: linear-gradient(135deg, var(--accent-primary), #ff0044);
     color: white;
-    padding: 12px;
-    /* Slimmer */
+    padding: 14px;
     border-radius: 100px;
-    /* Pill shape */
-    font-size: 1rem;
-    /* Slightly smaller */
+    font-size: 1.05rem;
     font-weight: 700;
     width: 100%;
     transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.primaryButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.primaryButton:disabled:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .primaryButton:hover {
@@ -333,50 +386,34 @@
     background: rgba(255, 255, 255, 0.1);
     color: white;
     padding: 12px;
-    /* Slimmer */
     border-radius: 100px;
-    /* Pill shape */
     font-size: 1rem;
     font-weight: 600;
     width: 100%;
     transition: background 0.2s;
+    border: none;
+    cursor: pointer;
 }
 
-.secondaryButton:hover {
+.secondaryButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.secondaryButton:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.15);
-}
-
-.textButton {
-    color: var(--text-secondary);
-    padding: 12px;
-    font-weight: 500;
-    font-size: 1rem;
-}
-
-.textButton:hover {
-    color: white;
 }
 
 /* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
+        transform: translateY(10px);
     }
 
     to {
         opacity: 1;
-    }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px) scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
 }
 
