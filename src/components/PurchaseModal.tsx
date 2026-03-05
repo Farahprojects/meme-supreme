@@ -14,6 +14,8 @@ interface PurchaseModalProps {
         price: string;
         type: string;
     } | null;
+    initialOrderId?: string;
+    initialStep?: Step;
 }
 
 type Step = "checkout" | "details" | "generating" | "result";
@@ -37,9 +39,11 @@ const LOADING_MESSAGES = [
 
 ];
 
-export default function PurchaseModal({ isOpen, onClose, selectedProduct }: PurchaseModalProps) {
-    const [step, setStep] = useState<Step>("checkout");
+export default function PurchaseModal({ isOpen, onClose, selectedProduct, initialOrderId, initialStep }: PurchaseModalProps) {
+    const [step, setStep] = useState<Step>(initialStep || "checkout");
     const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [orderId, setOrderId] = useState<string | null>(initialOrderId || null);
 
     // Form state
     const [targets, setTargets] = useState<TargetPerson[]>([{ name: "", date: "" }]);
@@ -57,9 +61,9 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
     const [isPolling, setIsPolling] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
 
-    // Reset state when opening
+    // Reset state when opening (unless we received initialOrderId/initialStep)
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && !initialOrderId) {
             setStep("checkout");
             setLoadingMsgIdx(0);
             setTargets([{ name: "", date: "" }]);
@@ -70,8 +74,12 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
             setCurrentSessionId(null);
             setIsMemeReadyBtnVisible(false);
             setIsPolling(false);
+            setOrderId(null);
+        } else if (isOpen && initialOrderId) {
+            setOrderId(initialOrderId);
+            if (initialStep) setStep(initialStep);
         }
-    }, [isOpen]);
+    }, [isOpen, initialOrderId, initialStep]);
 
     // Generation state management via refs (prevents re-render teardowns)
     const supabaseClientRef = useRef<SupabaseClient | null>(null);
@@ -101,8 +109,6 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
         setLoadingMsgIdx(0);
 
         try {
-            const sessionId = crypto.randomUUID();
-            setCurrentSessionId(sessionId);
             const apiUrl = process.env.NEXT_PUBLIC_THERAI_API_URL || 'http://localhost:54321/functions/v1';
             const anonKey = process.env.NEXT_PUBLIC_THERAI_ANON_KEY || '';
             const supabaseUrl = process.env.NEXT_PUBLIC_THERAI_SUPABASE_URL || 'https://wrvqqvqvwqmfdqvqmaar.supabase.co';
@@ -115,6 +121,11 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
             const client = createClient(supabaseUrl, anonKey);
             supabaseClientRef.current = client;
 
+            if (!orderId) {
+                throw new Error("No order ID found. Please try purchasing again.");
+            }
+            setCurrentSessionId(orderId); // Use orderId as the tracker session
+
             // 2. Dispatch the generation job to the worker
             const res = await fetch(`${apiUrl}/memeroast-worker`, {
                 method: 'POST',
@@ -123,7 +134,7 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                     'Authorization': `Bearer ${anonKey}`
                 },
                 body: JSON.stringify({
-                    session_id: sessionId,
+                    order_id: orderId,
                     product_type: selectedProduct?.type || 'Roast',
                     target_names: targets.map(t => t.name).filter(Boolean).join(", "),
                     context_description: contextDesc,
@@ -250,7 +261,7 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                     ✕
                 </button>
 
-                {/* Step 1: Checkout (Payment Bypassed for Testing) */}
+                {/* Step 1: Checkout */}
                 {step === "checkout" && (
                     <div className={styles.content}>
                         <h2 className={styles.title}>Confirm Purchase (Test Mode)</h2>
@@ -262,20 +273,40 @@ export default function PurchaseModal({ isOpen, onClose, selectedProduct }: Purc
                             <span className={styles.productPrice}>{selectedProduct.price}</span>
                         </div>
 
-                        <div className={styles.guestCheckoutBox}>
-                            <p>Guest Checkout</p>
-                            <div className={styles.fakeApplePay}>
-                                Bypass Payment (Testing)
-                            </div>
-                        </div>
-
                         <button
                             className={styles.primaryButton}
-                            onClick={() => setStep("details")}
+                            disabled={isCheckingOut}
+                            onClick={async () => {
+                                setIsCheckingOut(true);
+                                try {
+                                    const apiUrl = process.env.NEXT_PUBLIC_THERAI_API_URL || 'http://localhost:54321/functions/v1';
+                                    const response = await fetch(`${apiUrl}/memesupreme-create-checkout`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            product_type: 'memesupreme-roast', // The product id added to price_list
+                                            session_id: crypto.randomUUID()
+                                        })
+                                    });
+
+                                    if (!response.ok) throw new Error("Failed to initialize checkout.");
+                                    const data = await response.json();
+
+                                    if (data.url) {
+                                        window.location.href = data.url;
+                                    } else {
+                                        throw new Error("No checkout URL returned.");
+                                    }
+                                } catch (err) {
+                                    console.error(err);
+                                    alert("Could not start checkout. Please try again.");
+                                    setIsCheckingOut(false);
+                                }
+                            }}
                         >
-                            Bypass Pay & Continue
+                            {isCheckingOut ? "Loading..." : `Buy for ${selectedProduct.price}`}
                         </button>
-                        <p className={styles.fineprint}>Payment is currently disabled for testing.</p>
+                        <p className={styles.fineprint}>Secure checkout powered by Stripe. Apple Pay & Google Pay supported.</p>
                     </div>
                 )}
 

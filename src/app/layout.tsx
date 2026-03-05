@@ -4,6 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "MemeSupreme | Get Roasted",
   description: "AI-generated memes about you, your friends, or your relationship.",
+  icons: {
+    icon: "/assets/ms-icon-310x310.png",
+    apple: "/assets/ms-icon-310x310.png",
+  },
 };
 
 export default function RootLayout({

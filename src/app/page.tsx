@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import MemeCard from "@/components/MemeCard";
 import ProductCard from "@/components/ProductCard";
@@ -45,6 +45,28 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<typeof STORE_PRODUCTS[0] | null>(null);
   const [viewerMeme, setViewerMeme] = useState<MemeRecord | null>(null);
   const { history, removeMeme, clearHistory } = useMemeHistory();
+  const [initialOrderId, setInitialOrderId] = useState<string | undefined>();
+  const [initialStep, setInitialStep] = useState<"checkout" | "details" | "generating" | "result" | undefined>();
+
+  // Detect Stripe Success Return
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSuccess = urlParams.get("success") === "true";
+      const orderId = urlParams.get("order_id");
+
+      if (isSuccess && orderId) {
+        // Find the default product or map it from the URL if needed later
+        setSelectedProduct(STORE_PRODUCTS[0]);
+        setInitialOrderId(orderId);
+        setInitialStep("details");
+
+        // Clean up URL
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+      }
+    }
+  }, []);
 
   // For the continuous scroll effect, duplicate the feed array
   const scrollingFeed = [...FEED_MEMES, ...FEED_MEMES];
@@ -214,8 +236,14 @@ export default function Home() {
       {/* Purchase Flow Modal */}
       <PurchaseModal
         isOpen={!!selectedProduct}
-        onClose={() => setSelectedProduct(null)}
+        onClose={() => {
+          setSelectedProduct(null);
+          setInitialOrderId(undefined);
+          setInitialStep(undefined);
+        }}
         selectedProduct={selectedProduct}
+        initialOrderId={initialOrderId}
+        initialStep={initialStep}
       />
     </main>
   );
