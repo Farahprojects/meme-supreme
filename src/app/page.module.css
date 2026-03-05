@@ -412,10 +412,15 @@
     position: relative;
     width: 100%;
     flex: 1;
+    overflow: hidden;
+    /* Clips the zoomed image */
 }
 
 .viewerImage {
     object-fit: cover;
+    transform: scale(1.2);
+    /* 20% zoom */
+    transform-origin: center center;
 }
 
 .viewerFooter {
