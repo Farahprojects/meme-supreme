@@ -169,9 +169,13 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
 
         try {
             const apiUrl = process.env.NEXT_PUBLIC_THERAI_API_URL || 'http://localhost:54321/functions/v1';
+            const anonKey = process.env.NEXT_PUBLIC_THERAI_ANON_KEY || '';
             const response = await fetch(`${apiUrl}/memesupreme-create-checkout`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${anonKey}`
+                },
                 body: JSON.stringify({
                     product_type: 'memesupreme-roast',
                     session_id: crypto.randomUUID()
