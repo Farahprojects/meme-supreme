@@ -89,7 +89,7 @@ export default function Home() {
               className={styles.heroCta}
               onClick={() => document.getElementById("store")?.scrollIntoView({ behavior: "smooth" })}
             >
-              Shop the Studio
+              Create
             </button>
           </div>
         </div>
