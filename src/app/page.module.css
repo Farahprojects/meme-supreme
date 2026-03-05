@@ -466,3 +466,27 @@
         transform: translateY(0);
     }
 }
+/* Footer links */
+.footerLinks {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+.footerButton {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+}
+
+.footerButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateY(-1px);
+}

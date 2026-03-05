@@ -75,6 +75,19 @@
     color: var(--text-primary);
 }
 
+.navLink {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: color var(--transition-fast);
+    margin-right: 12px;
+    text-decoration: none;
+}
+
+.navLink:hover {
+    color: var(--text-primary);
+}
+
 .ctaButton {
     background: var(--text-primary);
     color: var(--bg-primary);
@@ -95,8 +108,9 @@
         gap: 16px;
     }
 
-    .link {
+    .link,
+    .ctaButton,
+    .navLink {
         display: none;
-        /* Hide 'Explore feed' on very small screens to prioritize CTA */
     }
 }

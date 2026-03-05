@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import MemeCard from "@/components/MemeCard";
 import StudioForm from "@/components/StudioForm";
@@ -204,6 +205,9 @@ export default function Home() {
       <footer className={styles.footer}>
         <div className="container">
           <p>© 2026 MemeSupreme. All rights reserved. No refunds for hurt feelings.</p>
+          <div className={styles.footerLinks}>
+            <Link href="/terms" className={styles.footerButton}>Terms</Link>
+          </div>
         </div>
       </footer>
     </main>

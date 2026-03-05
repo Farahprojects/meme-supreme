@@ -19,7 +19,7 @@ export default function Header({ onCreateClick }: HeaderProps) {
                     </Link>
                 </div>
                 <nav className={styles.navLinks}>
-                    <Link href="/terms" className="text-gray-300 hover:text-white transition-colors mr-6 text-sm font-medium">
+                    <Link href="/terms" className={styles.navLink}>
                         Terms
                     </Link>
                     <button
