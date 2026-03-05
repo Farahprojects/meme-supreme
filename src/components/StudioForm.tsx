@@ -21,11 +21,12 @@ interface TargetPerson {
 type Tone = "Funny" | "Sweet" | "Roast" | "Bold";
 
 const LOADING_MESSAGES = [
-    "Initializing chaotic energy...",
     "Analyzing internet history...",
     "Brewing the perfect vibe...",
     "Applying the personality...",
-    "Generating meme supreme...",
+    "Drafting the ultimate joke...",
+    "Sprinkling in some chaos...",
+    "Finalizing the meme...",
     "Almost done..."
 ];
 
@@ -154,7 +155,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
 
             btnTimeout = setTimeout(() => {
                 setIsMemeReadyBtnVisible(true);
-            }, 8000);
+            }, 10000);
         }
         return () => {
             clearInterval(msgInterval);
