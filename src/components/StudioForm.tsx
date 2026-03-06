@@ -483,7 +483,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
             )}
 
             {/* Purchase Modal overlay */}
-            {showPurchaseModal && (
+            {showPurchaseModal && step === "details" && (
                 <div className={styles.purchaseModalOverlay} onClick={() => setShowPurchaseModal(false)}>
                     <div className={styles.purchaseModalContent} onClick={e => e.stopPropagation()}>
                         <button className={styles.purchaseModalClose} onClick={() => setShowPurchaseModal(false)}>
@@ -518,6 +518,22 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                                     <span className={styles.packPrice}>• $10</span>
                                 </div>
                             </div>
+
+                            {process.env.NODE_ENV === 'development' && (
+                                <div
+                                    className={styles.packCard}
+                                    style={{ marginTop: '8px', borderStyle: 'dashed', opacity: 0.7 }}
+                                    onClick={() => {
+                                        setShowPurchaseModal(false);
+                                        handleBypassPay();
+                                    }}
+                                >
+                                    <h4 className={styles.packName} style={{ color: '#aaa' }}>Dev Skip</h4>
+                                    <div className={styles.packDetails}>
+                                        <span className={styles.packCount} style={{ fontSize: '1rem', color: '#aaa' }}>Bypass Stripe</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
