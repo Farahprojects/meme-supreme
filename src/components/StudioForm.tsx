@@ -558,7 +558,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                         <div className={styles.spinner}></div>
                     )}
                     <h2 className={`${styles.generationTitle} ${!isMemeReadyBtnVisible ? styles.pulsingText : ''}`}>
-                        {!isMemeReadyBtnVisible ? LOADING_MESSAGES[loadingMsgIdx] : "Generation Cycle Complete"}
+                        {!isMemeReadyBtnVisible ? LOADING_MESSAGES[loadingMsgIdx] : "Your Meme is Ready!"}
                     </h2>
 
                     {isMemeReadyBtnVisible && (
