@@ -197,6 +197,7 @@
     flex-direction: column;
     cursor: pointer;
     transition: transform 0.2s ease;
+    aspect-ratio: 3 / 4;
 }
 
 .vaultCard:hover {
@@ -206,7 +207,7 @@
 .vaultImageContainer {
     position: relative;
     width: 100%;
-    aspect-ratio: 3 / 4;
+    height: 100%;
     background: #000;
 }
 
