@@ -99,7 +99,7 @@
 
 .feedItem {
     width: 250px;
-    /* Maintains a good size for the vertical 9:16 cards */
+    /* Maintains a good size for the vertical 3:4 cards */
     flex-shrink: 0;
 }
 
