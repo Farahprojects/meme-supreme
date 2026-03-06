@@ -99,6 +99,18 @@ export default function Home() {
         <div className={styles.storeHeader}>
           <h2 className={styles.sectionTitle}>MemeSupreme Studio</h2>
           <p className={styles.sectionSub}>Funny. Roast. Sweet. Bold. Any vibe you want.</p>
+
+          <div className={styles.pricingCards}>
+            <div className={styles.pricingCard}>
+              <h3 className={styles.pricingName}>Starter Pack</h3>
+              <p className={styles.pricingAmount}>5 Memes for $3 USD</p>
+            </div>
+            <div className={`${styles.pricingCard} ${styles.pricingCardPremium}`}>
+              <div className={styles.pricingBadge}>Best Value</div>
+              <h3 className={styles.pricingName}>Creator Pack</h3>
+              <p className={styles.pricingAmount}>20 Memes for $10 USD</p>
+            </div>
+          </div>
         </div>
 
         {/* The new inline Studio Form */}
