@@ -456,19 +456,29 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                                 <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
                                     <button
                                         className={styles.primaryButton}
-                                        style={{ flex: 1, padding: '12px 10px', fontSize: '14px' }}
+                                        style={{ flex: 1, padding: '8px 10px', fontSize: '14px', lineHeight: '1.2' }}
                                         disabled={!targets.some(t => t.name) || !contextDesc || isCheckingOut || credits === null}
                                         onClick={() => handleCheckout('memesupreme-pack-5')}
                                     >
-                                        {isCheckingOut ? "Loading..." : "5 Memes ($3)"}
+                                        {isCheckingOut ? "Loading..." : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                <span style={{ fontWeight: 'bold' }}>Starter Pack</span>
+                                                <span style={{ fontSize: '12px', opacity: 0.9, fontWeight: 'normal' }}>5 Memes - $3</span>
+                                            </div>
+                                        )}
                                     </button>
                                     <button
                                         className={styles.primaryButton}
-                                        style={{ flex: 1, padding: '12px 10px', fontSize: '14px' }}
+                                        style={{ flex: 1, padding: '8px 10px', fontSize: '14px', lineHeight: '1.2' }}
                                         disabled={!targets.some(t => t.name) || !contextDesc || isCheckingOut || credits === null}
                                         onClick={() => handleCheckout('memesupreme-pack-20')}
                                     >
-                                        {isCheckingOut ? "Loading..." : "20 Memes ($10)"}
+                                        {isCheckingOut ? "Loading..." : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                <span style={{ fontWeight: 'bold' }}>Creator Pack</span>
+                                                <span style={{ fontSize: '12px', opacity: 0.9, fontWeight: 'normal' }}>20 Memes - $10</span>
+                                            </div>
+                                        )}
                                     </button>
                                 </div>
                             )}
