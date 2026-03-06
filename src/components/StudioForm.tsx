@@ -41,6 +41,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
     const [selectedTone, setSelectedTone] = useState<Tone>("Roast");
     const [showHint, setShowHint] = useState(false);
     const [credits, setCredits] = useState<number | null>(null);
+    const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
     const getSessionId = () => {
         if (typeof window === 'undefined') return '';
@@ -231,6 +232,16 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
             console.error(err);
             alert("Could not start checkout. Please try again.");
             setIsCheckingOut(false);
+        }
+    };
+
+    const handleGenerateClick = () => {
+        if (credits !== null && credits > 0) {
+            const sid = getSessionId();
+            setCurrentSessionId(sid);
+            startGeneration(sid);
+        } else {
+            setShowPurchaseModal(true);
         }
     };
 
@@ -451,50 +462,62 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                         </div>
 
                         <div className={styles.actionBox}>
-                            {credits !== null && credits > 0 ? (
-                                <button
-                                    className={styles.primaryButton}
-                                    disabled={!targets.some(t => t.name) || !contextDesc || isCheckingOut}
-                                    onClick={() => {
-                                        const sid = getSessionId();
-                                        setCurrentSessionId(sid);
-                                        startGeneration(sid);
-                                    }}
-                                >
-                                    Generate Meme • {credits} Left
-                                </button>
-                            ) : (
-                                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
-                                    <button
-                                        className={styles.primaryButton}
-                                        style={{ flex: 1, padding: '8px 10px', fontSize: '14px', lineHeight: '1.2' }}
-                                        disabled={!targets.some(t => t.name) || !contextDesc || isCheckingOut || credits === null}
-                                        onClick={() => handleCheckout('memesupreme-pack-5')}
-                                    >
-                                        {isCheckingOut ? "Loading..." : (
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                                <span style={{ fontWeight: 'bold' }}>Starter Pack</span>
-                                                <span style={{ fontSize: '12px', opacity: 0.9, fontWeight: 'normal' }}>5 Memes - $3</span>
-                                            </div>
-                                        )}
-                                    </button>
-                                    <button
-                                        className={styles.primaryButton}
-                                        style={{ flex: 1, padding: '8px 10px', fontSize: '14px', lineHeight: '1.2' }}
-                                        disabled={!targets.some(t => t.name) || !contextDesc || isCheckingOut || credits === null}
-                                        onClick={() => handleCheckout('memesupreme-pack-20')}
-                                    >
-                                        {isCheckingOut ? "Loading..." : (
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                                <span style={{ fontWeight: 'bold' }}>Creator Pack</span>
-                                                <span style={{ fontSize: '12px', opacity: 0.9, fontWeight: 'normal' }}>20 Memes - $10</span>
-                                            </div>
-                                        )}
-                                    </button>
-                                </div>
-                            )}
+                            <button
+                                className={styles.primaryButton}
+                                disabled={!targets.some(t => t.name) || !contextDesc || isCheckingOut || credits === null}
+                                onClick={handleGenerateClick}
+                            >
+                                {isCheckingOut ? "Loading..." : (
+                                    credits !== null && credits > 0
+                                        ? `Generate Meme • ${credits} Left`
+                                        : "Generate Meme"
+                                )}
+                            </button>
 
-                            <p className={styles.fineprint}>Secure checkout powered by Stripe. Apple Pay & Google Pay supported.</p>
+                            {process.env.NODE_ENV === 'development' && (
+                                <p className={styles.fineprint}>Secure checkout powered by Stripe. Apple Pay & Google Pay supported.</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Purchase Modal overlay */}
+            {showPurchaseModal && (
+                <div className={styles.purchaseModalOverlay} onClick={() => setShowPurchaseModal(false)}>
+                    <div className={styles.purchaseModalContent} onClick={e => e.stopPropagation()}>
+                        <button className={styles.purchaseModalClose} onClick={() => setShowPurchaseModal(false)}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+
+                        <div className={styles.purchaseModalHeader}>
+                            <h3 className={styles.purchaseModalTitle}>Choose your meme pack</h3>
+                            <p className={styles.purchaseModalSubtitle}>Fuel the chaos. No subscription required.</p>
+                        </div>
+
+                        <div className={styles.packOptions}>
+                            <div
+                                className={styles.packCard}
+                                onClick={() => handleCheckout('memesupreme-pack-5')}
+                            >
+                                <h4 className={styles.packName}>Starter Pack</h4>
+                                <div className={styles.packDetails}>
+                                    <span className={styles.packCount}>5 memes</span>
+                                    <span className={styles.packPrice}>• $3</span>
+                                </div>
+                            </div>
+
+                            <div
+                                className={`${styles.packCard} ${styles.packCardPremium}`}
+                                onClick={() => handleCheckout('memesupreme-pack-20')}
+                            >
+                                <div className={styles.premiumBadge}>Best Value</div>
+                                <h4 className={styles.packName}>Creator Pack</h4>
+                                <div className={styles.packDetails}>
+                                    <span className={styles.packCount}>20 memes</span>
+                                    <span className={styles.packPrice}>• $10</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
