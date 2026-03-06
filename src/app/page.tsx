@@ -162,7 +162,7 @@ export default function Home() {
                     src={meme.url}
                     alt="Saved meme"
                     className={styles.vaultImage}
-                    width={600}
+                    width={450}
                     height={800}
                     style={{ objectFit: 'cover' }}
                     unoptimized

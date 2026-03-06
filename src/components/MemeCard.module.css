@@ -16,8 +16,8 @@
 
 .imageWrapper {
     position: relative;
-    /* Fixed 3:4 aspect ratio for universal meme format */
-    aspect-ratio: 3 / 4;
+    /* Fixed 9:16 aspect ratio for generated memes */
+    aspect-ratio: 9 / 16;
 }
 
 .image {
