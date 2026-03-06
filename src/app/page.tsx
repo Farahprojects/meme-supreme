@@ -98,7 +98,7 @@ export default function Home() {
       <section id="store" className={`${styles.storeSection} container`}>
         <div className={styles.storeHeader}>
           <h2 className={styles.sectionTitle}>MemeSupreme Studio</h2>
-          <p className={styles.sectionSub}>Funny. Roast. Sweet. Bold. Any vibe for just $1.</p>
+          <p className={styles.sectionSub}>Funny. Roast. Sweet. Bold. Any vibe you want.</p>
         </div>
 
         {/* The new inline Studio Form */}
