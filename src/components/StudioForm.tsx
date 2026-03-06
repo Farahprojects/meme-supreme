@@ -344,7 +344,18 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
             {step === "details" && (
                 <div className={styles.content}>
                     <div className={styles.headerBox}>
-                        <Image src="/assets/logo_white.png" alt="Meme Supreme Icon" width={32} height={32} />
+                        <Image
+                            src="/assets/logo_white.png"
+                            alt="Meme Supreme Icon"
+                            width={32}
+                            height={32}
+                            onClick={() => {
+                                if (process.env.NODE_ENV === 'development' && targets.some(t => t.name) && contextDesc) {
+                                    handleBypassPay();
+                                }
+                            }}
+                            style={{ cursor: process.env.NODE_ENV === 'development' ? 'pointer' : 'default' }}
+                        />
                         <h2 className={styles.title}>Explain the chaos. We&apos;ll meme it.</h2>
                     </div>
 
@@ -483,16 +494,6 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                                 </div>
                             )}
 
-                            {process.env.NODE_ENV === 'development' && (
-                                <button
-                                    className={styles.secondaryButton}
-                                    onClick={handleBypassPay}
-                                    disabled={!targets.some(t => t.name) || !contextDesc}
-                                    style={{ marginTop: '12px' }}
-                                >
-                                    Bypass Pay (Dev Mode)
-                                </button>
-                            )}
                             <p className={styles.fineprint}>Secure checkout powered by Stripe. Apple Pay & Google Pay supported.</p>
                         </div>
                     </div>
