@@ -40,6 +40,17 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
     const [contextDesc, setContextDesc] = useState("");
     const [selectedTone, setSelectedTone] = useState<Tone>("Roast");
     const [showHint, setShowHint] = useState(false);
+    const [credits, setCredits] = useState<number | null>(null);
+
+    const getSessionId = () => {
+        if (typeof window === 'undefined') return '';
+        let sid = localStorage.getItem('memeSupremeSessionId');
+        if (!sid) {
+            sid = crypto.randomUUID();
+            localStorage.setItem('memeSupremeSessionId', sid);
+        }
+        return sid;
+    };
 
     const { addMeme } = useMemeHistory();
 
@@ -53,8 +64,31 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
 
     const supabaseClientRef = useRef<SupabaseClient | null>(null);
 
-    // Initialize from local storage if returning from Stripe
+    // Initialize from local storage if returning from Stripe or just loading
     useEffect(() => {
+        const sid = getSessionId();
+
+        const fetchCredits = async () => {
+            const supabaseUrl = process.env.NEXT_PUBLIC_THERAI_SUPABASE_URL || 'https://wrvqqvqvwqmfdqvqmaar.supabase.co';
+            const anonKey = process.env.NEXT_PUBLIC_THERAI_ANON_KEY || '';
+            const client = supabaseClientRef.current || createClient(supabaseUrl, anonKey);
+            if (!supabaseClientRef.current) supabaseClientRef.current = client;
+
+            try {
+                const { data } = await client
+                    .from('memesupreme_credits')
+                    .select('credits_remaining')
+                    .eq('session_id', sid)
+                    .single();
+
+                setCredits(data ? data.credits_remaining : 0);
+            } catch (e) {
+                setCredits(0);
+            }
+        };
+
+        fetchCredits();
+
         if (initialOrderId && initialStep === "generating") {
             const savedData = localStorage.getItem('memeSupremeFormData');
             if (savedData) {
@@ -68,8 +102,8 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                 }
             }
             setStep("generating");
-            setCurrentSessionId(initialOrderId);
-            startGeneration(initialOrderId, true); // True = auto-start using current state (via refs or passing args)
+            setCurrentSessionId(initialOrderId); // initialOrderId from query param is the session_id
+            startGeneration(initialOrderId, true);
         }
     }, [initialOrderId, initialStep]);
 
@@ -113,7 +147,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                     'Authorization': `Bearer ${anonKey}`
                 },
                 body: JSON.stringify({
-                    order_id: orderIdToUse,
+                    session_id: orderIdToUse,
                     product_type: 'memesupreme-roast',
                     target_names: reqTargets.map(t => t.name).filter(Boolean).join(", "),
                     context_description: reqContext,
@@ -163,7 +197,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
         };
     }, [step]);
 
-    const handleCheckoutAndGenerate = async () => {
+    const handleCheckout = async (product_type: string) => {
         setIsCheckingOut(true);
         // Save form state
         localStorage.setItem('memeSupremeFormData', JSON.stringify({ targets, contextDesc, selectedTone }));
@@ -171,6 +205,8 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
         try {
             const apiUrl = process.env.NEXT_PUBLIC_THERAI_API_URL || 'http://localhost:54321/functions/v1';
             const anonKey = process.env.NEXT_PUBLIC_THERAI_ANON_KEY || '';
+            const sid = getSessionId();
+
             const response = await fetch(`${apiUrl}/memesupreme-create-checkout`, {
                 method: 'POST',
                 headers: {
@@ -178,8 +214,8 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                     'Authorization': `Bearer ${anonKey}`
                 },
                 body: JSON.stringify({
-                    product_type: 'memesupreme-roast',
-                    session_id: crypto.randomUUID()
+                    product_type: product_type,
+                    session_id: sid
                 })
             });
 
@@ -290,6 +326,17 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
         setCurrentSessionId(null);
         setIsMemeReadyBtnVisible(false);
         setIsPolling(false);
+
+        // Refresh credits on form reset
+        const sid = getSessionId();
+        if (supabaseClientRef.current) {
+            supabaseClientRef.current
+                .from('memesupreme_credits')
+                .select('credits_remaining')
+                .eq('session_id', sid)
+                .single()
+                .then(({ data }) => setCredits(data ? data.credits_remaining : 0));
+        }
     };
 
     return (
@@ -393,18 +440,45 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                         </div>
 
                         <div className={styles.actionBox}>
-                            <button
-                                className={styles.primaryButton}
-                                disabled={!targets.some(t => t.name) || !contextDesc || isCheckingOut}
-                                onClick={handleCheckoutAndGenerate}
-                            >
-                                {isCheckingOut ? "Loading..." : "Purchase & Generate ($1.00)"}
-                            </button>
+                            {credits !== null && credits > 0 ? (
+                                <button
+                                    className={styles.primaryButton}
+                                    disabled={!targets.some(t => t.name) || !contextDesc || isCheckingOut}
+                                    onClick={() => {
+                                        const sid = getSessionId();
+                                        setCurrentSessionId(sid);
+                                        startGeneration(sid);
+                                    }}
+                                >
+                                    Generate Meme ({credits} left)
+                                </button>
+                            ) : (
+                                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                                    <button
+                                        className={styles.primaryButton}
+                                        style={{ flex: 1, padding: '12px 10px', fontSize: '14px' }}
+                                        disabled={!targets.some(t => t.name) || !contextDesc || isCheckingOut || credits === null}
+                                        onClick={() => handleCheckout('memesupreme-pack-5')}
+                                    >
+                                        {isCheckingOut ? "Loading..." : "5 Memes ($3)"}
+                                    </button>
+                                    <button
+                                        className={styles.primaryButton}
+                                        style={{ flex: 1, padding: '12px 10px', fontSize: '14px' }}
+                                        disabled={!targets.some(t => t.name) || !contextDesc || isCheckingOut || credits === null}
+                                        onClick={() => handleCheckout('memesupreme-pack-20')}
+                                    >
+                                        {isCheckingOut ? "Loading..." : "20 Memes ($10)"}
+                                    </button>
+                                </div>
+                            )}
+
                             {process.env.NODE_ENV === 'development' && (
                                 <button
                                     className={styles.secondaryButton}
                                     onClick={handleBypassPay}
                                     disabled={!targets.some(t => t.name) || !contextDesc}
+                                    style={{ marginTop: '12px' }}
                                 >
                                     Bypass Pay (Dev Mode)
                                 </button>
