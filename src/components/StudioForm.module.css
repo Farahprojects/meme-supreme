@@ -22,7 +22,7 @@
     max-height: 800px;
     width: auto;
     max-width: 450px;
-    aspect-ratio: 9 / 16;
+    aspect-ratio: 4 / 5;
     margin: 0 auto;
     overflow: visible;
     /* Let the resultContent handle the rounding and shadow */

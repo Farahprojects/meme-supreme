@@ -16,8 +16,8 @@
 
 .imageWrapper {
     position: relative;
-    /* Fixed 9:16 aspect ratio for mobile-first meme format */
-    aspect-ratio: 9 / 16;
+    /* Fixed 4:5 aspect ratio for universal meme format */
+    aspect-ratio: 4 / 5;
 }
 
 .image {
