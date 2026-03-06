@@ -44,8 +44,8 @@ export default function Home() {
 
         // Auto-scroll to the store form so they see it loading
         setTimeout(() => {
-          document.getElementById("store")?.scrollIntoView({ behavior: "smooth" });
-        }, 300);
+          document.getElementById("studio-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 500);
       }
     }
   }, []);
@@ -112,6 +112,8 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        <div id="studio-anchor" style={{ scrollMarginTop: '120px' }}></div>
 
         {/* The new inline Studio Form */}
         <StudioForm

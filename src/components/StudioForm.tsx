@@ -198,6 +198,19 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
         };
     }, [step]);
 
+    // Ensure the form stays perfectly lined up under the header during generation/result
+    useEffect(() => {
+        if (step === "generating" || step === "result") {
+            // Need a tiny delay to ensure DOM has updated its height before scrolling
+            setTimeout(() => {
+                const anchor = document.getElementById("studio-anchor");
+                if (anchor) {
+                    anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }, 100);
+        }
+    }, [step]);
+
     const handleCheckout = async (product_type: string) => {
         setIsCheckingOut(true);
         // Save form state
