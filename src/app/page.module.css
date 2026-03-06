@@ -206,7 +206,7 @@
 .vaultImageContainer {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 3 / 4;
     background: #000;
 }
 
@@ -378,7 +378,7 @@
     position: relative;
     height: 85vh;
     max-height: 800px;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 3 / 4;
     background: #000;
     border-radius: 32px;
     overflow: hidden;
