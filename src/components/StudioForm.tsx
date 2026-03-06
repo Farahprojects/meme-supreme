@@ -450,7 +450,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                                         startGeneration(sid);
                                     }}
                                 >
-                                    Generate Meme ({credits} left)
+                                    Generate Meme • {credits} Left
                                 </button>
                             ) : (
                                 <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
