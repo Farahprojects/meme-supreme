@@ -449,3 +449,171 @@
         transform: scale(0.98);
     }
 }
+
+/* Purchase Modal */
+.purchaseModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+    padding: 20px;
+}
+
+.purchaseModalContent {
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 400px;
+    padding: 32px 24px;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.purchaseModalClose {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.purchaseModalClose:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.purchaseModalHeader {
+    text-align: center;
+}
+
+.purchaseModalTitle {
+    color: white;
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.purchaseModalSubtitle {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.packOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.packCard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.packCard:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.packCardPremium {
+    background: linear-gradient(180deg, rgba(255, 51, 102, 0.1) 0%, rgba(20, 20, 20, 0.8) 100%);
+    border: 1px solid rgba(255, 51, 102, 0.4);
+    position: relative;
+}
+
+.packCardPremium:hover {
+    background: linear-gradient(180deg, rgba(255, 51, 102, 0.15) 0%, rgba(20, 20, 20, 0.8) 100%);
+    border-color: rgba(255, 51, 102, 0.6);
+    box-shadow: 0 8px 24px rgba(255, 51, 102, 0.2);
+}
+
+.premiumBadge {
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background: var(--accent-primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(255, 51, 102, 0.4);
+}
+
+.packName {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.packDetails {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.packCount {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: white;
+}
+
+.packPrice {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.packCardPremium .packCount,
+.packCardPremium .packName {
+    background: linear-gradient(135deg, #FF3366, #FF9933);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
