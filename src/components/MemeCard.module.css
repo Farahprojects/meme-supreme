@@ -6,7 +6,8 @@
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
     transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-    /* The cards are purely visual, no interaction required but a subtle hover is nice */
+    display: flex;
+    flex-direction: column;
 }
 
 .card:hover {
@@ -32,22 +33,33 @@
 }
 
 .labelContainer {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
+    padding: 12px;
     z-index: 2;
+    background: var(--bg-card);
+    display: flex;
+    justify-content: center;
 }
 
 .label {
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 100px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.7rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #fff;
+    color: var(--text-secondary);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.label:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
 }
