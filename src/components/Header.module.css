@@ -97,6 +97,37 @@
     background: var(--text-secondary);
 }
 
+.userSection {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.userEmail {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.signOutBtn {
+    background: none;
+    border: none;
+    color: #ff4747;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.signOutBtn:hover {
+    background: rgba(255, 71, 71, 0.1);
+}
+
 @media (max-width: 600px) {
     .navLinks {
         gap: 16px;

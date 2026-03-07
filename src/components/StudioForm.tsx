@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useMemeHistory } from "@/hooks/useMemeHistory";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { supabase, theraiSupabase } from "@/lib/supabase";
 import styles from "./StudioForm.module.css";
+import supabaseLoader from "@/lib/supabase-image-loader";
 
 interface StudioFormProps {
     initialOrderId?: string;
@@ -63,20 +64,18 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
     const [isPolling, setIsPolling] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
 
-    const supabaseClientRef = useRef<SupabaseClient | null>(null);
+    const supabaseClientRef = useRef(theraiSupabase);
 
     // Initialize from local storage if returning from Stripe or just loading
     useEffect(() => {
         const sid = getSessionId();
 
         const fetchCredits = async () => {
-            const supabaseUrl = process.env.NEXT_PUBLIC_THERAI_SUPABASE_URL || 'https://wrvqqvqvwqmfdqvqmaar.supabase.co';
-            const anonKey = process.env.NEXT_PUBLIC_THERAI_ANON_KEY || '';
-            const client = supabaseClientRef.current || createClient(supabaseUrl, anonKey);
+            const client = theraiSupabase;
             if (!supabaseClientRef.current) supabaseClientRef.current = client;
 
             try {
-                const { data } = await client
+                const { data } = await theraiSupabase
                     .from('memesupreme_credits')
                     .select('credits_remaining')
                     .eq('session_id', sid)
@@ -114,14 +113,11 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
         setLoadingMsgIdx(0);
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_THERAI_API_URL || 'http://localhost:54321/functions/v1';
-            const anonKey = process.env.NEXT_PUBLIC_THERAI_ANON_KEY || '';
-            const supabaseUrl = process.env.NEXT_PUBLIC_THERAI_SUPABASE_URL || 'https://wrvqqvqvwqmfdqvqmaar.supabase.co';
-
-            if (!anonKey) throw new Error("Missing NEXT_PUBLIC_THERAI_ANON_KEY in .env.local");
-
-            const client = createClient(supabaseUrl, anonKey);
+            const client = theraiSupabase;
             supabaseClientRef.current = client;
+
+            const apiUrl = `${process.env.NEXT_PUBLIC_THERAI_SUPABASE_URL}/functions/v1`;
+            const anonKey = process.env.NEXT_PUBLIC_THERAI_SUPABASE_ANON_KEY || '';
 
             // If autoStart, we need to read from localStorage just in case state hasn't flushed
             let reqTargets = targets;
@@ -217,8 +213,8 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
         localStorage.setItem('memeSupremeFormData', JSON.stringify({ targets, contextDesc, selectedTone }));
 
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_THERAI_API_URL || 'http://localhost:54321/functions/v1';
-            const anonKey = process.env.NEXT_PUBLIC_THERAI_ANON_KEY || '';
+            const apiUrl = `${process.env.NEXT_PUBLIC_THERAI_SUPABASE_URL}/functions/v1`;
+            const anonKey = process.env.NEXT_PUBLIC_THERAI_SUPABASE_ANON_KEY || '';
             const sid = getSessionId();
 
             const response = await fetch(`${apiUrl}/memesupreme-create-checkout`, {
@@ -606,7 +602,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                         <>
                             <div className={styles.resultImageContainer}>
                                 {generatedImage && (
-                                    <Image src={generatedImage} alt="Generated Roast Meme" fill className={styles.resultImage} unoptimized={true} />
+                                    <Image src={generatedImage} alt="Generated Roast Meme" fill className={styles.resultImage} loader={supabaseLoader} />
                                 )}
                             </div>
 

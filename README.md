@@ -1,4 +1,14 @@
+# Meme Supreme Web App
+
+## ⚠️ DATABASE CONFIGURATION (Meme Supreme)
+- **URL**: `https://cossyqsvqxatbbhysdur.supabase.co`
+- **Short URL**: `cossyqsvqxatbbhysdur`
+- **DB Password**: `Botros2007198$`
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
 
 ## Getting Started
 

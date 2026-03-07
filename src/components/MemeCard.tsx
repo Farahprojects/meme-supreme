@@ -1,4 +1,5 @@
 import Image from "next/image";
+import supabaseLoader from "@/lib/supabase-image-loader";
 import styles from "./MemeCard.module.css";
 
 interface MemeCardProps {
@@ -19,6 +20,7 @@ export default function MemeCard({ imageUrl, type, alt, priority = false }: Meme
                     className={styles.image}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     priority={priority}
+                    loader={supabaseLoader}
                 />
             </div>
             <div className={styles.labelContainer}>

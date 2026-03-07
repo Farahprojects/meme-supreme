@@ -8,6 +8,7 @@ import StudioForm from "@/components/StudioForm";
 import { useMemeHistory, MemeRecord } from "@/hooks/useMemeHistory";
 import styles from "./page.module.css";
 import Image from "next/image";
+import supabaseLoader from "@/lib/supabase-image-loader";
 
 // Mock data for the hero / feed
 const FEED_MEMES = [
@@ -26,6 +27,30 @@ export default function Home() {
   const { history, removeMeme, clearHistory } = useMemeHistory();
   const [initialOrderId, setInitialOrderId] = useState<string | undefined>();
   const [initialStep, setInitialStep] = useState<"details" | "generating" | "result" | undefined>();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const forceDownload = async (url: string, filename: string) => {
+    try {
+      setIsDownloading(true);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Network response was not ok");
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(blobUrl);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Failed to download image", err);
+      alert("Failed to download the image. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   // Detect Stripe Success Return
   useEffect(() => {
@@ -164,20 +189,22 @@ export default function Home() {
                     className={styles.vaultImage}
                     width={450}
                     height={800}
-                    style={{ objectFit: 'cover' }}
-                    unoptimized
+                    style={{ objectFit: 'contain' }}
+                    loader={supabaseLoader}
                   />
                   <div className={styles.vaultBadge}>{meme.tone}</div>
                   <div className={styles.vaultCardOverlay}>
-                    <a
-                      href={meme.url}
-                      download={`meme-${meme.timestamp}.jpg`}
+                    <button
                       className={styles.vaultIconBtn}
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        forceDownload(meme.url, `meme-${meme.timestamp}.jpg`);
+                      }}
+                      disabled={isDownloading}
                       title="Download Meme"
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    </a>
+                    </button>
                     <button
                       className={styles.vaultIconBtn}
                       onClick={(e) => {
@@ -210,7 +237,24 @@ export default function Home() {
           <div className={styles.viewerModal} onClick={(e) => e.stopPropagation()}>
             <button className={styles.viewerClose} onClick={() => setViewerMeme(null)}>✕</button>
             <div className={styles.viewerImageContainer}>
-              <Image src={viewerMeme.url} alt="Vault Meme" fill className={styles.viewerImage} unoptimized />
+              <Image src={viewerMeme.url} alt="Vault Meme" fill className={styles.viewerImage} loader={supabaseLoader} />
+            </div>
+            <div className={styles.viewerFooter}>
+              <div className={styles.viewerInfo}>
+                <h3>{viewerMeme.tone} Meme</h3>
+                <p>{new Date(viewerMeme.timestamp).toLocaleDateString()}</p>
+              </div>
+              <div className={styles.viewerActions}>
+                <button
+                  className={styles.vaultIconBtn}
+                  onClick={() => forceDownload(viewerMeme.url, `meme-${viewerMeme.timestamp}.jpg`)}
+                  disabled={isDownloading}
+                  title="Download Meme"
+                  style={{ width: '40px', height: '40px' }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
