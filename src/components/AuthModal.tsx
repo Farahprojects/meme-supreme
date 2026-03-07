@@ -22,6 +22,12 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     if (!isOpen) return null;
 
     const handleSocialSignIn = async (provider: 'google' | 'apple') => {
+        // Safety check for unconfigured Supabase
+        if (supabase.auth === undefined || process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('placeholder')) {
+            setError("Supabase is not configured yet. Please add your credentials to .env.local");
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
@@ -40,6 +46,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Safety check for unconfigured Supabase
+        if (supabase.auth === undefined || process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('placeholder')) {
+            setError("Supabase is not configured yet. Please add your credentials to .env.local");
+            return;
+        }
+
         setLoading(true);
         setError(null);
         setSuccess(null);
