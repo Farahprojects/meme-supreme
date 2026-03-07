@@ -192,6 +192,8 @@ export default function Home() {
                     style={{ objectFit: 'contain' }}
                     loader={supabaseLoader}
                   />
+                </div>
+                <div className={styles.vaultInfo}>
                   <div className={styles.vaultBadge}>{meme.tone}</div>
                   <div className={styles.vaultCardOverlay}>
                     <button
