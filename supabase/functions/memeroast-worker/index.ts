@@ -123,6 +123,7 @@ SCENE STYLE (locked; must be followed exactly):
 ${styleDescription}
 
 RULES:${toneRules}
+- CRITICAL NO-CELEBRITIES RULE: NEVER use names of real celebrities, public figures, politicians, or copyrighted characters (e.g., Zendaya, Gordon Gekko, Elon Musk) in the imagePrompt. It will instantly trigger AI safety filters and hard-fail. Describe generic outfits, styles, or vibes instead.
 - Caption must read like a modern internet meme.
 - No hashtags, no emojis.
 - Then: Generate an image prompt that makes the caption land perfectly.
