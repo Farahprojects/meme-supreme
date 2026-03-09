@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useMemeHistory } from "@/hooks/useMemeHistory";
-import { supabase, theraiSupabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import styles from "./StudioForm.module.css";
 import supabaseLoader from "@/lib/supabase-image-loader";
 
@@ -64,18 +64,15 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
     const [isPolling, setIsPolling] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
 
-    const supabaseClientRef = useRef(theraiSupabase);
+
 
     // Initialize from local storage if returning from Stripe or just loading
     useEffect(() => {
         const sid = getSessionId();
 
         const fetchCredits = async () => {
-            const client = theraiSupabase;
-            if (!supabaseClientRef.current) supabaseClientRef.current = client;
-
             try {
-                const { data } = await theraiSupabase
+                const { data } = await supabase
                     .from('memesupreme_credits')
                     .select('credits_remaining')
                     .eq('session_id', sid)
@@ -113,11 +110,8 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
         setLoadingMsgIdx(0);
 
         try {
-            const client = theraiSupabase;
-            supabaseClientRef.current = client;
-
-            const apiUrl = `${process.env.NEXT_PUBLIC_THERAI_SUPABASE_URL}/functions/v1`;
-            const anonKey = process.env.NEXT_PUBLIC_THERAI_SUPABASE_ANON_KEY || '';
+            const apiUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`;
+            const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
             // If autoStart, we need to read from localStorage just in case state hasn't flushed
             let reqTargets = targets;
@@ -213,8 +207,8 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
         localStorage.setItem('memeSupremeFormData', JSON.stringify({ targets, contextDesc, selectedTone }));
 
         try {
-            const apiUrl = `${process.env.NEXT_PUBLIC_THERAI_SUPABASE_URL}/functions/v1`;
-            const anonKey = process.env.NEXT_PUBLIC_THERAI_SUPABASE_ANON_KEY || '';
+            const apiUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`;
+            const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
             const sid = getSessionId();
 
             const response = await fetch(`${apiUrl}/memesupreme-create-checkout`, {
@@ -262,15 +256,14 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
     };
 
     const handleMemeReady = async () => {
-        if (!currentSessionId || !supabaseClientRef.current) return;
+        if (!currentSessionId) return;
         setIsPolling(true);
         let attempts = 0;
 
         const poll = async () => {
             attempts++;
             try {
-                if (!supabaseClientRef.current) return;
-                const { data } = await supabaseClientRef.current
+                const { data } = await supabase
                     .from('memeroast_images')
                     .select('status, image_url')
                     .eq('session_id', currentSessionId)
@@ -349,14 +342,12 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
 
         // Refresh credits on form reset
         const sid = getSessionId();
-        if (supabaseClientRef.current) {
-            supabaseClientRef.current
-                .from('memesupreme_credits')
-                .select('credits_remaining')
-                .eq('session_id', sid)
-                .single()
-                .then(({ data }) => setCredits(data ? data.credits_remaining : 0));
-        }
+        supabase
+            .from('memesupreme_credits')
+            .select('credits_remaining')
+            .eq('session_id', sid)
+            .single()
+            .then(({ data }) => setCredits(data ? data.credits_remaining : 0));
     };
 
     return (
@@ -469,6 +460,8 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                                 ))}
                             </div>
                         </div>
+
+
 
                         <div className={styles.actionBox}>
                             <button
