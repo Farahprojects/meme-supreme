@@ -1,9 +1,11 @@
 .card {
     position: relative;
     width: 100%;
-    border-radius: var(--border-radius-lg);
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--border-radius-md);
     overflow: hidden;
-    background: #000;
+    background-color: var(--bg-card);
     border: 1px solid var(--border-color);
     transition: transform var(--transition-normal), box-shadow var(--transition-normal);
     cursor: pointer;
@@ -11,20 +13,23 @@
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* Force the wrapper to the exact 3:4 ratio the generated images use */
 .imageWrapper {
     position: relative;
     aspect-ratio: 3 / 4;
     background: #000;
-    overflow: hidden;
+    width: 100%;
 }
 
-/* contain = never crop; since images are 3:4 and container is 3:4 they fill perfectly */
 .image {
-    object-fit: contain;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.card:hover .image {
+    transform: scale(1.02);
 }
 
 /* Scrims matching VPS overlay */
@@ -33,15 +38,14 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 38%;
+    height: 40%;
     background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.75) 0%,
-        rgba(0, 0, 0, 0.28) 60%,
+        rgba(0, 0, 0, 0.72) 0%,
+        rgba(0, 0, 0, 0.32) 60%,
         transparent 100%
     );
     pointer-events: none;
-    z-index: 1;
 }
 
 .scrimBottom {
@@ -49,15 +53,14 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 42%;
+    height: 45%;
     background: linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.75) 0%,
-        rgba(0, 0, 0, 0.28) 60%,
+        rgba(0, 0, 0, 0.72) 0%,
+        rgba(0, 0, 0, 0.32) 60%,
         transparent 100%
     );
     pointer-events: none;
-    z-index: 1;
 }
 
 /* Text overlay — Poppins ExtraBold, white + black stroke via text-shadow */
@@ -78,19 +81,16 @@
         0 4px 8px rgba(0, 0, 0, 0.9);
     pointer-events: none;
     line-height: 1.3;
-    z-index: 2;
 }
 
 .namesText {
-    top: 5%;
-    /* shift right to clear the logo */
-    padding-left: 14%;
-    font-size: clamp(11px, 3vw, 20px);
+    top: 4%;
+    font-size: clamp(12px, 6.2vw, 24px);
 }
 
 .captionText {
     bottom: 5%;
-    font-size: clamp(11px, 3vw, 20px);
+    font-size: clamp(11px, 5.5vw, 22px);
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -101,11 +101,10 @@
     position: absolute;
     top: 4%;
     left: 4%;
-    width: clamp(14px, 3.5vw, 26px);
-    height: clamp(14px, 3.5vw, 26px);
+    width: clamp(14px, 4vw, 28px);
+    height: clamp(14px, 4vw, 28px);
     pointer-events: none;
     isolation: isolate;
-    z-index: 3;
 }
 
 .logo {
@@ -114,19 +113,17 @@
     object-fit: contain;
 }
 
-/* Tone badge moved to top-right so it never overlaps the bottom caption */
 .toneBadge {
     position: absolute;
-    top: 4%;
+    bottom: 4%;
     right: 4%;
-    padding: 3px 9px;
+    padding: 4px 10px;
     border-radius: 100px;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    background: rgba(0, 0, 0, 0.55);
-    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.05em;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
     pointer-events: none;
-    z-index: 3;
 }
