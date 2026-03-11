@@ -3,8 +3,9 @@
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import { useAuth } from "@/hooks/useAuth";
 
-// These routes are public-facing and use the top Header, not the app Sidebar
+// Routes that show the public Header when the user is NOT signed in
 const PUBLIC_ROUTES = ["/", "/library", "/terms"];
 
 function isPublicRoute(pathname: string) {
@@ -13,7 +14,21 @@ function isPublicRoute(pathname: string) {
 
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { user, loading } = useAuth();
 
+    // Signed-in users always get the Sidebar on every page
+    if (!loading && user) {
+        return (
+            <div className="app-layout">
+                <Sidebar />
+                <div className="main-content">
+                    {children}
+                </div>
+            </div>
+        );
+    }
+
+    // Not signed in: public routes get the Header, everything else gets the Sidebar
     if (isPublicRoute(pathname)) {
         return (
             <div className="landing-layout">
