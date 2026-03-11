@@ -35,6 +35,7 @@ function thumbnailUrl(fullUrl: string): string {
             );
             url.pathname = renderPath;
             url.searchParams.set("width", "400");
+            url.searchParams.set("height", "572");
             url.searchParams.set("quality", "75");
             return url.toString();
         }
