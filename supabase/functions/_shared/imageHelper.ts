@@ -28,12 +28,12 @@ export async function generateAndUploadRawImage(
     const generationStartTime = Date.now();
     let base64Image: string | undefined;
 
-    // For sync/meme mode, add aspect ratio and quality settings
+    // Valid Imagen API config fields only — compressionQuality is not a valid field
+    // and caused Imagen to ignore the aspectRatio, producing landscape output
     const config = {
         numberOfImages: 1,
         aspectRatio: mode === 'sync' || mode === 'meme' ? '3:4' : '1:1',
         personGeneration: "allow_adult",
-        compressionQuality: 75
     };
 
     // Add explicit no-border instruction to every prompt
