@@ -76,12 +76,13 @@
 .modalOverlay {
     position: fixed;
     inset: 0;
-    z-index: 100;
+    /* above the bottom sidebar (z-index: 1000) on all screen sizes */
+    z-index: 1001;
     background: rgba(0, 0, 0, 0.88);
     display: flex;
     align-items: center;
     justify-content: center;
-    /* top padding for close button + breathing room, bottom for mobile browser chrome */
+    /* top: space for close button; sides: breathing room; bottom: browser chrome */
     padding: 3rem 1.25rem 1.5rem;
     cursor: pointer;
 }
@@ -89,17 +90,13 @@
 .modalContent {
     position: relative;
     /*
-     * Width-constrained by:
-     *   - absolute max (460px desktop)
-     *   - viewport width minus side padding (92vw)
-     *   - viewport height: a 3:4 image must fit in ~88dvh → width = 88dvh × (3/4) = 66dvh
-     * The smallest of these wins, ensuring the image never overflows the screen in any direction.
+     * Width is height-driven so the 3:4 image never overflows the screen.
+     * 66dvh = width when image height is 88dvh (66 = 88 × 0.75).
+     * Smallest of desktop max, viewport width, and height-derived width wins.
      */
-    width: min(460px, 92vw, 66dvh);
-    cursor: default;
-    /* fallback for browsers without dvh support */
     width: min(460px, 92vw, calc(88vh * 0.75));
     width: min(460px, 92vw, 66dvh);
+    cursor: default;
 }
 
 .modalContent > article {
@@ -131,9 +128,26 @@
     background: rgba(255, 255, 255, 0.25);
 }
 
+/* Tablet/mobile: bottom sidebar is 72px — add padding so image clears it */
+@media (max-width: 768px) {
+    .modalOverlay {
+        /* 72px sidebar + 1rem gap + top padding for close button */
+        padding: 3rem 1rem calc(72px + 1rem);
+    }
+
+    .modalContent {
+        /*
+         * Available height = viewport - top padding (3rem≈48px) - bottom padding (72px+1rem≈88px)
+         * ≈ viewport - 136px. Use a tighter height budget for the width calc.
+         * calc((100vh - 136px) * 0.75) drives width so image fits vertically.
+         */
+        width: min(92vw, calc((100vh - 136px) * 0.75));
+        width: min(92vw, calc((100dvh - 136px) * 0.75));
+    }
+}
+
 @media (max-width: 480px) {
     .modalOverlay {
-        padding: 3rem 0.75rem 1rem;
-        align-items: center;
+        padding: 3rem 0.75rem calc(72px + 0.75rem);
     }
 }
