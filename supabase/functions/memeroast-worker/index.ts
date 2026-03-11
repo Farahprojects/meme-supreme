@@ -142,6 +142,7 @@ ${styleDescription}
 
 RULES:${toneRules}
 - CRITICAL NO-CELEBRITIES RULE: NEVER use names of real celebrities, public figures, politicians, or copyrighted characters (e.g., Zendaya, Gordon Gekko, Elon Musk) in the imagePrompt. It will instantly trigger AI safety filters and hard-fail. Describe generic outfits, styles, or vibes instead.
+- CRITICAL IMAGE SAFETY RULES (violations cause hard failures): NEVER reference brand names, apps, or platforms (e.g. Discord, Instagram, TikTok, Netflix) in the imagePrompt. NEVER reference specific internet meme formats or characters (e.g. Doge, Shiba Inu, specific meme templates).
 - Caption must read like a modern internet meme.
 - No hashtags, no emojis.
 - Then: Generate an image prompt that makes the caption land perfectly.
