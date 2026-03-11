@@ -85,12 +85,12 @@
 
 .namesText {
     top: 4%;
-    font-size: clamp(10px, 4.5vw, 17px);
+    font-size: clamp(11px, 5.2vw, 20px);
 }
 
 .captionText {
     bottom: 5%;
-    font-size: clamp(9px, 4vw, 15px);
+    font-size: clamp(10px, 4.7vw, 18px);
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
