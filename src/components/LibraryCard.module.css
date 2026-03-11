@@ -25,11 +25,12 @@
 
 .image {
     object-fit: cover;
+    transform: scale(0.85);
     transition: transform 0.5s ease;
 }
 
 .card:hover .image {
-    transform: scale(1.02);
+    transform: scale(0.87);
 }
 
 /* Scrims matching VPS overlay */
