@@ -77,36 +77,47 @@
     position: fixed;
     inset: 0;
     z-index: 100;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.88);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    /* top padding for close button + breathing room, bottom for mobile browser chrome */
+    padding: 3rem 1.25rem 1.5rem;
     cursor: pointer;
 }
 
 .modalContent {
     position: relative;
-    width: min(520px, 90vw);
-    max-height: 90vh;
+    /*
+     * Width-constrained by:
+     *   - absolute max (460px desktop)
+     *   - viewport width minus side padding (92vw)
+     *   - viewport height: a 3:4 image must fit in ~88dvh → width = 88dvh × (3/4) = 66dvh
+     * The smallest of these wins, ensuring the image never overflows the screen in any direction.
+     */
+    width: min(460px, 92vw, 66dvh);
     cursor: default;
+    /* fallback for browsers without dvh support */
+    width: min(460px, 92vw, calc(88vh * 0.75));
+    width: min(460px, 92vw, 66dvh);
 }
 
 .modalContent > article {
     width: 100%;
-    height: auto;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
 }
 
 .modalClose {
     position: absolute;
-    top: -2.5rem;
+    top: -2.25rem;
     right: 0;
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.15);
     color: white;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     line-height: 1;
     display: flex;
     align-items: center;
@@ -118,4 +129,11 @@
 
 .modalClose:hover {
     background: rgba(255, 255, 255, 0.25);
+}
+
+@media (max-width: 480px) {
+    .modalOverlay {
+        padding: 3rem 0.75rem 1rem;
+        align-items: center;
+    }
 }
