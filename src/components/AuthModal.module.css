@@ -126,6 +126,31 @@
     box-shadow: 0 0 15px rgba(255, 0, 255, 0.1);
 }
 
+.passwordWrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.eyeIcon {
+    position: absolute;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.eyeIcon:hover {
+    color: #fff;
+}
+
 .submitBtn {
     margin-top: 12px;
     padding: 10px 20px;

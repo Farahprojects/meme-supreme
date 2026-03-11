@@ -65,24 +65,7 @@
     font-weight: 800;
 }
 
-.actionsBox {
-    margin-top: 20px;
-}
 
-.primaryBtn {
-    background: linear-gradient(90deg, #ff00ff, #8000ff);
-    color: #fff;
-    padding: 14px 32px;
-    border-radius: 100px;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.primaryBtn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 32px rgba(255, 0, 255, 0.4);
-}
 
 @media (max-width: 768px) {
     .title {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,8 +17,24 @@ export default function Header({ onCreateClick }: HeaderProps) {
     const { user, loading } = useAuth();
     const router = useRouter();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     const handleSignOut = async () => {
+        setIsDropdownOpen(false);
         await supabase.auth.signOut();
     };
 
@@ -36,45 +52,58 @@ export default function Header({ onCreateClick }: HeaderProps) {
                         Terms
                     </Link>
 
-                    {/* MOCK AUTH BYPASS: Hidden in production, accessible in dev */}
-                    {process.env.NODE_ENV === 'development' && (
-                        loading ? (
-                            <div className={styles.navLink}>...</div>
-                        ) : user ? (
-                            <div className={styles.userSection}>
-                                <span className={styles.userEmail}>{user.email}</span>
-                                <button
-                                    className={styles.signOutBtn}
-                                    onClick={handleSignOut}
-                                >
-                                    Sign Out
-                                </button>
-                            </div>
-                        ) : (
+                    {loading ? (
+                        <div className={styles.navLink}>...</div>
+                    ) : user ? (
+                        <div className={styles.userSection} ref={dropdownRef}>
+                            <button
+                                className={styles.userAvatarBtn}
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                aria-label="User menu"
+                            >
+                                {user.email?.charAt(0).toUpperCase() || 'U'}
+                            </button>
+
+                            {isDropdownOpen && (
+                                <div className={styles.dropdownMenu}>
+                                    <div className={styles.dropdownHeader}>
+                                        <span className={styles.dropdownEmail}>{user.email}</span>
+                                    </div>
+                                    <div className={styles.dropdownDivider}></div>
+                                    <button
+                                        className={styles.dropdownItem}
+                                        onClick={handleSignOut}
+                                    >
+                                        Sign Out
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <>
                             <button
                                 className={styles.signInBtn}
-                                onClick={() => router.push('/dashboard')}
+                                onClick={() => setIsAuthModalOpen(true)}
                             >
                                 Sign In
                             </button>
-                        )
+                            <button
+                                className={styles.ctaButton}
+                                onClick={() => {
+                                    if (onCreateClick) {
+                                        onCreateClick();
+                                    } else {
+                                        const storeSection = document.getElementById("store");
+                                        if (storeSection) {
+                                            storeSection.scrollIntoView({ behavior: "smooth" });
+                                        }
+                                    }
+                                }}
+                            >
+                                Create
+                            </button>
+                        </>
                     )}
-
-                    <button
-                        className={styles.ctaButton}
-                        onClick={() => {
-                            if (onCreateClick) {
-                                onCreateClick();
-                            } else {
-                                const storeSection = document.getElementById("store");
-                                if (storeSection) {
-                                    storeSection.scrollIntoView({ behavior: "smooth" });
-                                }
-                            }
-                        }}
-                    >
-                        Create
-                    </button>
                 </nav>
             </div>
 

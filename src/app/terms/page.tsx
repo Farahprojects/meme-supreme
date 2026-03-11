@@ -1,13 +1,10 @@
 import React from 'react';
-import Header from '@/components/Header';
 import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function TermsAndPolicies() {
     return (
         <div className={styles.pageContainer}>
-            <Header />
-
             <main className={styles.mainContent}>
                 <div>
                     <Link href="/" className={styles.backLink}>

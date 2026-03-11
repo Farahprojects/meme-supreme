@@ -2,27 +2,37 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Header from "@/components/Header";
 import MemeCard from "@/components/MemeCard";
 import StudioForm from "@/components/StudioForm";
 import { useMemeHistory, MemeRecord } from "@/hooks/useMemeHistory";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import Image from "next/image";
 import supabaseLoader from "@/lib/supabase-image-loader";
 
 // Mock data for the hero / feed
 const FEED_MEMES = [
-  { id: 1, type: "Brand Roast", url: "/assets/memes/brand.jpg" },
-  { id: 2, type: "Couple Roast", url: "/assets/memes/1770966675947-ff4927ed-e1df-416a-a6c8-7ab443f0ad74.jpg" },
-  { id: 3, type: "Brand Funny", url: "/assets/memes/brand1.jpg" },
-  { id: 4, type: "Restaurant funny", url: "/assets/memes/restone.jpg" },
-  { id: 5, type: "Creator Funny", url: "/assets/memes/content.jpg" },
-  { id: 6, type: "Brand Roast", url: "/assets/memes/brand.jpg" },
-  { id: 7, type: "Birth Date Funny", url: "/assets/memes/singel1.jpg" },
-  { id: 8, type: "Custom Funny", url: "/assets/memes/singel.jpg" },
+  { id: 1, type: "Roast", url: "/assets/memes/brand.jpg" },
+  { id: 2, type: "Sweet", url: "/assets/memes/couplesweet.jpg" },
+  { id: 3, type: "Bold", url: "/assets/memes/brand1.jpg" },
+  { id: 4, type: "Funny", url: "/assets/memes/restone.jpg" },
+  { id: 5, type: "Funny", url: "/assets/memes/content.jpg" },
+  { id: 6, type: "Roast", url: "/assets/memes/brand.jpg" },
+  { id: 7, type: "Funny", url: "/assets/memes/singel1.jpg" },
+  { id: 8, type: "Funny", url: "/assets/memes/singel.jpg" },
 ];
 
 export default function Home() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
   const [viewerMeme, setViewerMeme] = useState<MemeRecord | null>(null);
   const { history, removeMeme, clearHistory } = useMemeHistory();
   const [initialOrderId, setInitialOrderId] = useState<string | undefined>();
@@ -80,17 +90,15 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <Header />
-
       {/* Hero Section */}
       <section className={styles.hero}>
         <div className="container">
           <div className={styles.heroContent}>
             <h1 className={styles.headline}>
-              Meme <span className="text-gradient">Your Life.</span>
+              Content that <span className="text-gradient">hits different.</span>
             </h1>
             <p className={styles.subtext}>
-              AI-generated memes for every vibe. Funny, Roast, Sweet, or Bold we&apos;ve got you covered.
+              From a single idea to something the feed can&apos;t ignore. For brands, creators, and anyone with a story worth telling.
             </p>
             <button
               className={styles.heroCta}
@@ -189,7 +197,6 @@ export default function Home() {
                     className={styles.vaultImage}
                     width={450}
                     height={800}
-                    style={{ objectFit: 'contain' }}
                     loader={supabaseLoader}
                   />
                 </div>

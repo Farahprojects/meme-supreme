@@ -267,15 +267,14 @@
 .vaultImageContainer {
     position: relative;
     width: 100%;
-    aspect-ratio: 9 / 16;
+    aspect-ratio: 3 / 4;
     background: #000;
-    padding: 16px;
 }
 
 .vaultImage {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     object-position: center;
 }
 
@@ -439,9 +438,19 @@
     position: relative;
     height: 85vh;
     max-height: 800px;
-    aspect-ratio: 9 / 16;
-    background: #000;
+    aspect-ratio: 3 / 4;
     border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.historyCard {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--border-radius-md);
     overflow: hidden;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     display: flex;

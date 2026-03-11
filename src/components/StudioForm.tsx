@@ -48,7 +48,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
         if (typeof window === 'undefined') return '';
         let sid = localStorage.getItem('memeSupremeSessionId');
         if (!sid) {
-            sid = crypto.randomUUID();
+            sid = generateUUID();
             localStorage.setItem('memeSupremeSessionId', sid);
         }
         return sid;
@@ -105,7 +105,23 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
     }, [initialOrderId, initialStep]);
 
     // Used for auto-starting generation right after re-hydration from localStorage
-    const startGeneration = async (orderIdToUse: string, isAutoStart = false) => {
+    const generateUUID = (): string => {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        // Fallback for Safari < 15.4
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    };
+
+    const startGeneration = async (
+        orderIdToUse: string,
+        isAutoStart = false,
+        withBind = true,
+        directData?: { targets: TargetPerson[]; contextDesc: string; selectedTone: Tone }
+    ) => {
         setStep("generating");
         setLoadingMsgIdx(0);
 
@@ -113,22 +129,27 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
             const apiUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`;
             const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-            // If autoStart, we need to read from localStorage just in case state hasn't flushed
             let reqTargets = targets;
             let reqContext = contextDesc;
             let reqTone = selectedTone;
 
-            if (isAutoStart) {
-                const savedData = localStorage.getItem('memeSupremeFormData');
-                if (savedData) {
-                    try {
+            if (directData) {
+                // Use directly passed data — avoids localStorage (Safari-safe)
+                reqTargets = directData.targets;
+                reqContext = directData.contextDesc;
+                reqTone = directData.selectedTone;
+            } else if (isAutoStart) {
+                // Stripe return flow — page reloaded so state is gone, must use localStorage
+                try {
+                    const savedData = localStorage.getItem('memeSupremeFormData');
+                    if (savedData) {
                         const parsed = JSON.parse(savedData);
                         reqTargets = parsed.targets || targets;
                         reqContext = parsed.contextDesc || contextDesc;
                         reqTone = parsed.selectedTone || selectedTone;
-                    } catch (e) { }
-                }
-                localStorage.removeItem('memeSupremeFormData'); // clear it
+                    }
+                } catch (e) { }
+                localStorage.removeItem('memeSupremeFormData');
             }
 
             const res = await fetch(`${apiUrl}/memeroast-worker`, {
@@ -144,7 +165,8 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                     context_description: reqContext,
                     tone: reqTone.toLowerCase(),
                     optional_date: reqTargets.filter(t => t.date).map(t => `${t.name || 'Target'}: ${t.date || 'Unknown Date'}`).join(" | "),
-                    optional_location: ""
+                    optional_location: "",
+                    ...(withBind && { vps_bind: "bind" })
                 })
             });
 
@@ -249,10 +271,9 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
     };
 
     const handleBypassPay = () => {
-        localStorage.setItem('memeSupremeFormData', JSON.stringify({ targets, contextDesc, selectedTone }));
-        const testId = `test-${crypto.randomUUID()}`;
+        const testId = `test-${generateUUID()}`;
         setCurrentSessionId(testId);
-        startGeneration(testId, true);
+        startGeneration(testId, false, true, { targets, contextDesc, selectedTone });
     };
 
     const handleMemeReady = async () => {
@@ -397,6 +418,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                                         type="text"
                                         placeholder="Name"
                                         value={target.name}
+                                        maxLength={50}
                                         onChange={(e) => {
                                             const newTargets = [...targets];
                                             newTargets[idx].name = e.target.value;
@@ -440,6 +462,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                             <textarea
                                 placeholder="e.g. They think they're a DJ, always late, loves oat milk..."
                                 rows={3}
+                                maxLength={1000}
                                 value={contextDesc}
                                 onChange={(e) => setContextDesc(e.target.value)}
                             ></textarea>
@@ -498,7 +521,8 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                         </div>
 
                         <div className={styles.packOptions}>
-                            <div
+                            <button
+                                type="button"
                                 className={styles.packCard}
                                 onClick={() => handleCheckout('memesupreme-pack-5')}
                             >
@@ -507,9 +531,10 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                                     <span className={styles.packCount}>5 memes</span>
                                     <span className={styles.packPrice}>• $3</span>
                                 </div>
-                            </div>
+                            </button>
 
-                            <div
+                            <button
+                                type="button"
                                 className={`${styles.packCard} ${styles.packCardPremium}`}
                                 onClick={() => handleCheckout('memesupreme-pack-20')}
                             >
@@ -519,10 +544,11 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                                     <span className={styles.packCount}>20 memes</span>
                                     <span className={styles.packPrice}>• $10</span>
                                 </div>
-                            </div>
+                            </button>
 
                             {process.env.NODE_ENV === 'development' && (
-                                <div
+                                <button
+                                    type="button"
                                     className={styles.packCard}
                                     style={{ marginTop: '8px', borderStyle: 'dashed', opacity: 0.7 }}
                                     onClick={() => {
@@ -534,7 +560,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                                     <div className={styles.packDetails}>
                                         <span className={styles.packCount} style={{ fontSize: '1rem', color: '#aaa' }}>Bypass Stripe</span>
                                     </div>
-                                </div>
+                                </button>
                             )}
                         </div>
                     </div>

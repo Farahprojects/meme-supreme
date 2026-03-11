@@ -13,7 +13,7 @@ export default function AuthCallback() {
         const handleAuthCallback = async () => {
             const { error } = await supabase.auth.getSession();
             if (!error) {
-                router.push('/');
+                router.push('/dashboard');
             }
         };
 

@@ -32,7 +32,7 @@ export async function generateAndUploadRawImage(
     const config = {
         numberOfImages: 1,
         aspectRatio: mode === 'sync' || mode === 'meme' ? '3:4' : '1:1',
-        outputMimeType: 'image/jpeg',
+        personGeneration: "allow_adult",
         compressionQuality: 75
     };
 

@@ -2,12 +2,10 @@
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
-    background: rgba(20, 20, 20, 0.4);
+    background: rgba(20, 20, 20, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--border-radius-lg);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     overflow: hidden;
     position: relative;
     animation: fadeIn 0.4s ease;
@@ -22,7 +20,7 @@
     max-height: 800px;
     width: auto;
     max-width: 450px;
-    aspect-ratio: 9 / 16;
+    aspect-ratio: 3 / 4;
     margin: 0 auto;
     overflow: visible;
     /* Let the resultContent handle the rounding and shadow */
@@ -99,6 +97,15 @@
     font-size: 0.75rem;
     cursor: pointer;
     padding: 0;
+}
+
+.resultImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: var(--border-radius-lg);
+    display: block;
 }
 
 .hintTooltip {
@@ -458,14 +465,23 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
     animation: fadeIn 0.3s ease;
     padding: 20px;
+    cursor: default;
+}
+
+.purchaseModalOverlay::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: -1;
+    pointer-events: none;
 }
 
 .purchaseModalContent {
@@ -538,6 +554,9 @@
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
+    width: 100%;
+    font-family: inherit;
+    color: inherit;
 }
 
 .packCard:hover {

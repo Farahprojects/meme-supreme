@@ -1,0 +1,235 @@
+// ============================================================================
+// PRO LIMIT CHECKER - Centralized feature limit checking
+// Single function to check any feature limit using database-driven config
+// ============================================================================
+
+import type { SupabaseClient } from "./types.ts";
+
+export interface LimitCheckResult {
+  allowed: boolean;
+  limit?: number | null;
+  current_usage?: number;
+  remaining?: number;
+  is_unlimited?: boolean;
+  reason?: string;
+  error_code?: string;
+}
+
+export type FeatureType =
+  | 'voice_seconds'
+  | 'image_generation'
+  | 'therai_calls'
+  | 'chat';
+
+/**
+ * Check if user has access to a feature based on their subscription plan limits.
+ * Uses database-driven limits from plan_limits table for flexibility.
+ * 
+ * @param supabase - Supabase client (preferably service role)
+ * @param userId - User ID to check
+ * @param featureType - Feature to check ('voice_seconds', 'image_generation', etc.)
+ * @param requestedAmount - Amount being requested (default 1)
+ * @returns LimitCheckResult with allowed status and usage info
+ */
+export async function checkLimit(
+  supabase: SupabaseClient,
+  userId: string,
+  featureType: FeatureType,
+  requestedAmount: number = 1
+): Promise<LimitCheckResult> {
+  try {
+    if (featureType === 'voice_seconds') {
+      const { data, error } = await supabase.rpc('check_voice_limit', {
+        p_user_id: userId,
+        p_requested_seconds: requestedAmount
+      });
+
+      if (error) {
+        console.error('[limitChecker] Voice limit RPC error:', error);
+        return {
+          allowed: false,
+          reason: 'Failed to check voice limit',
+          error_code: 'RPC_ERROR'
+        };
+      }
+
+      return {
+        allowed: data?.allowed ?? false,
+        limit: data?.limit ?? null,
+        current_usage: data?.seconds_used ?? 0,
+        remaining: data?.is_unlimited ? null : data?.remaining ?? 0,
+        is_unlimited: data?.is_unlimited ?? false,
+        reason: data?.reason
+      };
+    }
+
+    // Call centralized database function
+    const { data, error } = await supabase.rpc('check_feature_limit', {
+      p_user_id: userId,
+      p_feature_type: featureType,
+      p_requested_amount: requestedAmount,
+      p_period: null // Ignored, kept for backward compatibility
+    });
+
+    if (error) {
+      console.error('[limitChecker] RPC error:', error);
+      return {
+        allowed: false,
+        reason: 'Failed to check limit',
+        error_code: 'RPC_ERROR'
+      };
+    }
+
+    return data as LimitCheckResult;
+  } catch (err) {
+    console.error('[limitChecker] Exception:', err);
+    return {
+      allowed: false,
+      reason: 'Exception checking limit',
+      error_code: 'EXCEPTION'
+    };
+  }
+}
+
+/**
+ * Get all limits and current usage for a user.
+ * Useful for displaying limit information in UI.
+ */
+export async function getUserLimits(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<{
+  limits: {
+    plan_id: string;
+    plan_name: string;
+    voice_seconds: number | null;
+    image_generation_daily: number | null;
+    therai_calls: number | null;
+    features: {
+      together_mode: boolean;
+      voice_mode: boolean;
+      image_generation: boolean;
+      priority_support: boolean;
+      early_access: boolean;
+    };
+  };
+  usage: {
+    voice_seconds: number;
+    therai_calls: number;
+  };
+} | null> {
+  try {
+    const { data, error } = await supabase.rpc('get_user_limits', {
+      p_user_id: userId
+    });
+
+    if (error) {
+      console.error('[limitChecker] Failed to get user limits:', error);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('[limitChecker] Exception getting limits:', err);
+    return null;
+  }
+}
+
+/**
+ * Increment usage after successful feature use.
+ * Uses existing increment functions with centralized tracking.
+ */
+export async function incrementUsage(
+  supabase: SupabaseClient,
+  userId: string,
+  featureType: FeatureType,
+  amount: number
+): Promise<{ success: boolean; reason?: string }> {
+  try {
+    if (featureType === 'voice_seconds') {
+      const { error } = await supabase.rpc('increment_voice_usage', {
+        p_user_id: userId,
+        p_seconds: amount
+      });
+
+      if (error) {
+        console.error('[limitChecker] Failed to increment voice usage:', error);
+        return {
+          success: false,
+          reason: error.message
+        };
+      }
+
+      return { success: true };
+    }
+
+    // Map feature type to RPC function
+    const rpcMap: Partial<Record<FeatureType, string>> = {
+      'therai_calls': 'increment_therai_calls',
+      'image_generation': 'increment_images_generated',
+      'chat': 'increment_chat_messages'
+    };
+
+    const rpcFunction = rpcMap[featureType];
+
+    if (!rpcFunction) {
+      return {
+        success: false,
+        reason: `Unknown feature type: ${featureType}`
+      };
+    }
+
+    // Build RPC parameters (no period needed - functions handle daily auto-reset)
+    const rpcParams: Record<string, any> = {
+      p_user_id: userId
+    };
+
+    // Add amount parameter with correct name
+    if (featureType === 'therai_calls') {
+      rpcParams.p_calls = amount;
+    } else {
+      rpcParams.p_count = amount;
+    }
+
+    const { error } = await supabase.rpc(rpcFunction, rpcParams);
+
+    if (error) {
+      console.error(`[limitChecker] Failed to increment ${featureType}:`, error);
+      return {
+        success: false,
+        reason: error.message
+      };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('[limitChecker] Exception incrementing usage:', err);
+    return {
+      success: false,
+      reason: err instanceof Error ? err.message : 'Unknown error'
+    };
+  }
+}
+
+// ============================================================================
+// MIGRATION HELPERS - for transitioning from old system
+// ============================================================================
+
+/**
+ * Backward compatibility: Map old checkFeatureAccess to new checkLimit
+ * @deprecated Use checkLimit directly
+ */
+export async function checkFeatureAccess(
+  supabase: SupabaseClient,
+  userId: string,
+  featureType: 'voice_seconds',
+  requestedAmount: number = 1
+): Promise<{
+  allowed: boolean;
+  remaining?: number;
+  limit?: number | null;
+  reason?: string;
+}> {
+  return await checkLimit(supabase, userId, featureType as FeatureType, requestedAmount);
+}
+

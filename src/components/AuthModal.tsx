@@ -10,19 +10,27 @@ interface AuthModalProps {
     onClose: () => void;
 }
 
+type AuthStep = "email" | "otc";
+
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     const router = useRouter();
-    const [isSignUp, setIsSignUp] = useState(false);
+    const [step, setStep] = useState<AuthStep>("email");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [otc, setOtc] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
+    // Determines if we render "Sign In" or "Sign Up" text for social buttons/headers
+    const [isSignUpIntent, setIsSignUpIntent] = useState(false);
+
     if (!isOpen) return null;
 
     const handleSocialSignIn = async (provider: 'google' | 'apple') => {
-        // Safety check for unconfigured Supabase
         if (supabase.auth === undefined || process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('placeholder')) {
             setError("Supabase is not configured yet. Please add your credentials to .env.local");
             return;
@@ -44,12 +52,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleEmailSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Safety check for unconfigured Supabase
-        if (supabase.auth === undefined || process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('placeholder')) {
-            setError("Supabase is not configured yet. Please add your credentials to .env.local");
+        if (!email || !password) return;
+
+        if (isSignUpIntent && password !== confirmPassword) {
+            setError("Passwords do not match.");
             return;
         }
 
@@ -58,34 +67,129 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         setSuccess(null);
 
         try {
-            if (isSignUp) {
-                const { error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: {
-                        emailRedirectTo: `${window.location.origin}/auth/callback`,
+            if (isSignUpIntent) {
+                // Sign Up flow: standard email/password provided, but we send OTC for verification first
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/memesupreme-auth`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
                     },
+                    body: JSON.stringify({ action: "request_otc", email }),
                 });
-                if (error) throw error;
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || "Failed to send code.");
+                }
+
+                setSuccess("We've sent a 6-digit code to your email.");
+                setStep("otc");
+            } else {
+                // Sign In flow: standard password verification
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (signInError) {
+                    // Check if they need verification
+                    if (signInError.message.toLowerCase().includes("email not confirmed")) {
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/memesupreme-auth`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+                            },
+                            body: JSON.stringify({ action: "request_otc", email }),
+                        });
+
+                        if (res.ok) {
+                            setSuccess("Please confirm your email. We've sent a 6-digit code.");
+                            setStep("otc");
+                            return;
+                        }
+                    }
+                    throw signInError;
+                }
+
                 setSuccess("Success! Redirecting...");
                 setTimeout(() => {
                     onClose();
                     router.push("/dashboard");
-                }, 1500);
-            } else {
-                const { error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password,
-                });
-                if (error) throw error;
-                onClose();
-                router.push("/dashboard");
+                }, 1000);
             }
+
+        } catch (err: any) {
+            let errorMessage = err.message || "Something went wrong. Please try again.";
+            if (errorMessage.toLowerCase().includes("invalid login credentials")) {
+                errorMessage = "Invalid email or password. If you haven't verified your email yet, please switch to 'Sign Up' to resend the code.";
+            }
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOtcSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!otc || otc.length !== 6) {
+            setError("Please enter the 6-digit code.");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/memesupreme-auth`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify({ action: "verify_otc", email, token: otc, password }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || "Invalid code.");
+            }
+
+            const data = await res.json();
+
+            // Set the magic session from our Edge Function
+            if (data.session) {
+                const { error: sessionError } = await supabase.auth.setSession(data.session);
+                if (sessionError) throw new Error("Failed to set local session.");
+
+                setSuccess("Success! Redirecting...");
+                setTimeout(() => {
+                    onClose();
+                    router.push("/dashboard");
+                }, 1000);
+            } else {
+                throw new Error("No session returned from server.");
+            }
+
         } catch (err: any) {
             setError(err.message || "Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleReset = () => {
+        setStep("email");
+        setOtc("");
+        setPassword("");
+        setConfirmPassword("");
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+        setError(null);
+        setSuccess(null);
     };
 
     return (
@@ -95,70 +199,146 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
 
-                <h2 className={styles.title}>{isSignUp ? "Join Supreme" : "Welcome Back"}</h2>
+                <h2 className={styles.title}>
+                    {step === "email" ? (isSignUpIntent ? "Join Supreme" : "Welcome Back") : "Check your email"}
+                </h2>
                 <p className={styles.subtitle}>
-                    {isSignUp ? "Create an account to save your memes to the cloud." : "Sign in to access your vault from any device."}
+                    {step === "email"
+                        ? (isSignUpIntent ? "Create an account to save your memes to the cloud." : "Sign in to access your vault from any device.")
+                        : `We sent a 6-digit code to ${email}`
+                    }
                 </p>
 
                 {error && <div className={styles.error}>{error}</div>}
                 {success && <div className={styles.success}>{success}</div>}
 
-                <form className={styles.form} onSubmit={handleSubmit}>
-                    <div className={styles.inputGroup}>
-                        <label>Email Address</label>
-                        <input
-                            type="email"
-                            placeholder="you@example.com"
-                            className={styles.input}
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
+                {step === "email" ? (
+                    <form className={styles.form} onSubmit={handleEmailSubmit}>
+                        <div className={styles.inputGroup}>
+                            <label>Email Address</label>
+                            <input
+                                type="email"
+                                placeholder="you@example.com"
+                                className={styles.input}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label>Password</label>
+                            <div className={styles.passwordWrapper}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    className={styles.input}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    minLength={6}
+                                />
+                                <button
+                                    type="button"
+                                    className={styles.eyeIcon}
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    tabIndex={-1}
+                                    aria-label="Toggle password visibility"
+                                >
+                                    {showPassword ? (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"></path></svg>
+                                    ) : (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
 
-                    <div className={styles.inputGroup}>
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            placeholder="••••••••"
-                            className={styles.input}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
+                        {isSignUpIntent && (
+                            <div className={styles.inputGroup}>
+                                <label>Confirm Password</label>
+                                <div className={styles.passwordWrapper}>
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        placeholder="••••••••"
+                                        className={styles.input}
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        required
+                                        minLength={6}
+                                    />
+                                    <button
+                                        type="button"
+                                        className={styles.eyeIcon}
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        tabIndex={-1}
+                                        aria-label="Toggle password visibility"
+                                    >
+                                        {showConfirmPassword ? (
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"></path></svg>
+                                        ) : (
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
-                    <button className={styles.submitBtn} disabled={loading}>
-                        {loading ? "Processing..." : (isSignUp ? "Sign Up" : "Sign In")}
-                    </button>
-                </form>
+                        <button className={styles.submitBtn} disabled={loading || !email || !password || (isSignUpIntent && !confirmPassword)}>
+                            {loading ? "Please wait..." : (isSignUpIntent ? "Sign Up" : "Sign In")}
+                        </button>
+                    </form>
+                ) : (
+                    <form className={styles.form} onSubmit={handleOtcSubmit}>
+                        <div className={styles.inputGroup}>
+                            <label>6-Digit Code</label>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={6}
+                                placeholder="123456"
+                                className={styles.input}
+                                value={otc}
+                                onChange={(e) => setOtc(e.target.value.replace(/\D/g, ''))} // only allow numbers
+                                style={{ letterSpacing: '8px', fontSize: '1.2rem', textAlign: 'center', fontWeight: 'bold' }}
+                                required
+                            />
+                        </div>
 
-                <div className={styles.divider}>or</div>
+                        <button className={styles.submitBtn} disabled={loading || otc.length !== 6}>
+                            {loading ? "Verifying..." : "Sign In"}
+                        </button>
 
-                <div className={styles.socialButtons}>
-                    <button className={styles.socialBtn} onClick={() => handleSocialSignIn('google')} disabled={loading}>
-                        <svg className={styles.socialIcon} viewBox="0 0 24 24">
-                            <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115Z" />
-                            <path fill="#34A853" d="M16.04 18.013c-1.09.693-2.459 1.077-4.04 1.077a7.077 7.077 0 0 1-6.734-4.856L1.24 17.35C3.198 21.302 7.27 24 12 24c2.93 0 5.735-1.043 7.834-3l-3.793-2.987Z" />
-                            <path fill="#4A90E2" d="M19.834 21c2.193-2.04 3.416-5.464 3.416-9 0-.64-.09-1.298-.26-1.954l-11.026-.008L12 14.536h6.582c-.31 1.487-1.11 2.73-2.54 3.477l3.792 2.987Z" />
-                            <path fill="#FBBC05" d="M5.266 14.235a7.077 7.077 0 0 1 0-4.47L1.24 6.65a11.96 11.96 0 0 0 0 10.7l4.026-3.115Z" />
-                        </svg>
-                        {isSignUp ? "Continue with Google" : "Sign in with Google"}
-                    </button>
-                    <button className={styles.socialBtn} onClick={() => handleSocialSignIn('apple')} disabled={loading}>
-                        <svg className={styles.socialIcon} viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M17.05 20.28c-.98.95-2.05 1.72-3.26 1.72-1.16 0-1.54-.72-2.95-.72-1.42 0-1.87.7-2.95.72-1.19.02-2.38-.85-3.41-2.32-2.11-3.03-1.62-7.82.97-10.77 1.28-1.47 2.8-2.38 4.45-2.4 1.25-.03 2.45.83 3.21.83.76 0 2.21-.99 3.73-.84 1.5.06 2.67.61 3.43 1.71-3.13 1.83-2.61 6.01.5 7.42-1.11 1.63-2.55 3.25-4.12 4.7l.4.01v.01ZM14.15 4.3c-1.78.22-3.12 1.62-2.8 3.32 1.78-.22 2.93-1.61 2.8-3.32h0Z" />
-                        </svg>
-                        {isSignUp ? "Continue with Apple" : "Sign in with Apple"}
-                    </button>
-                </div>
+                        <button type="button" className={styles.secondaryBtn} onClick={handleReset} style={{ background: 'transparent', border: 'none', color: '#666', marginTop: '12px', cursor: 'pointer', width: '100%' }}>
+                            Use a different email
+                        </button>
+                    </form>
+                )}
 
-                <div className={styles.toggle}>
-                    {isSignUp ? "Already have an account?" : "Don't have an account?"}
-                    <button className={styles.toggleBtn} onClick={() => setIsSignUp(!isSignUp)}>
-                        {isSignUp ? "Sign In" : "Sign Up"}
-                    </button>
-                </div>
+                {step === "email" && (
+                    <>
+                        <div className={styles.divider}>or</div>
+
+                        <div className={styles.socialButtons}>
+                            <button className={styles.socialBtn} onClick={() => handleSocialSignIn('google')} disabled={loading}>
+                                <svg className={styles.socialIcon} viewBox="0 0 24 24">
+                                    <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115Z" />
+                                    <path fill="#34A853" d="M16.04 18.013c-1.09.693-2.459 1.077-4.04 1.077a7.077 7.077 0 0 1-6.734-4.856L1.24 17.35C3.198 21.302 7.27 24 12 24c2.93 0 5.735-1.043 7.834-3l-3.793-2.987Z" />
+                                    <path fill="#4A90E2" d="M19.834 21c2.193-2.04 3.416-5.464 3.416-9 0-.64-.09-1.298-.26-1.954l-11.026-.008L12 14.536h6.582c-.31 1.487-1.11 2.73-2.54 3.477l3.792 2.987Z" />
+                                    <path fill="#FBBC05" d="M5.266 14.235a7.077 7.077 0 0 1 0-4.47L1.24 6.65a11.96 11.96 0 0 0 0 10.7l4.026-3.115Z" />
+                                </svg>
+                                {isSignUpIntent ? "Continue with Google" : "Sign in with Google"}
+                            </button>
+                        </div>
+
+                        <div className={styles.toggle}>
+                            {isSignUpIntent ? "Already have an account?" : "Don't have an account?"}
+                            <button className={styles.toggleBtn} onClick={() => setIsSignUpIntent(!isSignUpIntent)}>
+                                {isSignUpIntent ? "Sign In" : "Sign Up"}
+                            </button>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

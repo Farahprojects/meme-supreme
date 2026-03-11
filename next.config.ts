@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  devIndicators: {
+    appIsrStatus: false,
+    buildActivity: false,
+    buildActivityPosition: 'bottom-right',
+  } as any,
   images: {
     remotePatterns: [
       {
@@ -9,7 +14,16 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'cossyqsvqxatbbhysdur.supabase.co',
+      },
+      // Legacy: kept for any existing vault images from earlier infrastructure
+      {
+        protocol: 'https',
         hostname: 'wrvqqvqvwqmfdqvqmaar.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.therai.co',
       },
     ],
   },

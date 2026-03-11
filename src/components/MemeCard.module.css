@@ -17,14 +17,12 @@
 
 .imageWrapper {
     position: relative;
-    /* Fixed 9:16 aspect ratio for generated memes */
-    aspect-ratio: 9 / 16;
-    padding: 16px;
+    aspect-ratio: 3 / 4;
     background: #000;
 }
 
 .image {
-    object-fit: contain;
+    object-fit: cover;
     transition: transform 0.5s ease;
 }
 
