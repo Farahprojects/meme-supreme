@@ -4,12 +4,17 @@ import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
+// These routes are public-facing and use the top Header, not the app Sidebar
+const PUBLIC_ROUTES = ["/", "/library", "/terms"];
+
+function isPublicRoute(pathname: string) {
+    return PUBLIC_ROUTES.includes(pathname) || pathname.startsWith("/library");
+}
+
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    // Use the Header for the landing page
-    const isLandingPage = pathname === "/";
 
-    if (isLandingPage) {
+    if (isPublicRoute(pathname)) {
         return (
             <div className="landing-layout">
                 <Header />

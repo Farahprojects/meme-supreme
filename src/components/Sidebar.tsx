@@ -60,6 +60,23 @@ export default function Sidebar() {
                     <Link href="/" className={styles.logoLink} aria-label="Home">
                         <Image src="/assets/logo_white.png" alt="Meme Supreme Icon" width={32} height={32} className={styles.logoIcon} />
                     </Link>
+                    <Link href="/library" className={styles.navIconLink} aria-label="Library" title="Library">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                    </Link>
+                    {process.env.NODE_ENV === "development" && (
+                        <Link href="/dev/library-generator" className={styles.devLink} aria-label="Library Generator (Dev)" title="Seed Library (Dev)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                <path d="M4.93 4.93a10 10 0 0 0 0 14.14"></path>
+                            </svg>
+                        </Link>
+                    )}
                 </div>
 
                 <div className={styles.bottomSection}>
