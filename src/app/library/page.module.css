@@ -73,13 +73,16 @@
     color: var(--accent-primary);
 }
 
+/* ─── Modal overlay ─────────────────────────────────────────────────────── */
+
 .modalOverlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1001;
+    /* Below the sidebar (1000) so nav always renders on top */
+    z-index: 999;
     background: rgba(0, 0, 0, 0.88);
     display: flex;
     align-items: center;
@@ -88,11 +91,53 @@
     cursor: pointer;
 }
 
+/*
+ * Signed-in layout: sidebar is always present.
+ * Desktop  → sidebar is 72px on the LEFT  → modal starts at left: 72px
+ * ≤768px   → sidebar is 72px at the BOTTOM → modal ends at bottom: 72px
+ * This keeps the nav bar fully visible while the modal is open.
+ */
+.modalOverlaySignedIn {
+    left: 72px; /* clear the left sidebar on desktop */
+}
+
+@media (max-width: 768px) {
+    .modalOverlaySignedIn {
+        left: 0;
+        bottom: 72px; /* clear the bottom sidebar on tablet/mobile */
+    }
+}
+
 .modalContent {
     position: relative;
-    width: min(460px, 92vw, calc(88vh * 0.75));
-    width: min(460px, 92vw, 66dvh);
+    /*
+     * Width driven by height so the 3:4 image never overflows.
+     * 66dvh = image width when height = 88dvh (66 = 88 × 0.75).
+     */
+    width: min(460px, 88vw, calc(88vh * 0.75));
+    width: min(460px, 88vw, 66dvh);
     cursor: default;
+}
+
+/* Signed-in desktop: available width is reduced by left sidebar (72px) */
+.modalOverlaySignedIn .modalContent {
+    width: min(460px, calc(88vw - 72px), calc(88vh * 0.75));
+    width: min(460px, calc(88vw - 72px), 66dvh);
+}
+
+/* Signed-in mobile: available height is reduced by bottom sidebar (72px) */
+@media (max-width: 768px) {
+    .modalOverlaySignedIn .modalContent {
+        width: min(88vw, calc((100vh - 144px) * 0.75));
+        width: min(88vw, calc((100dvh - 144px) * 0.75));
+    }
+}
+
+/* Not-signed-in mobile: full screen but account for browser chrome */
+@media (max-width: 768px) {
+    .modalOverlay:not(.modalOverlaySignedIn) .modalContent {
+        width: min(88vw, calc((100dvh - 96px) * 0.75));
+    }
 }
 
 .modalContent > article {
@@ -122,33 +167,4 @@
 
 .modalClose:hover {
     background: rgba(255, 255, 255, 0.25);
-}
-
-/*
- * On tablet/mobile the sidebar moves to the bottom (72px tall, z-index 1000).
- * Stop the overlay 72px above the bottom so the nav always shows through.
- * The sidebar z-index (1000) is below the modal (1001) but since the overlay
- * doesn't extend under it, the nav is always visible.
- */
-@media (max-width: 768px) {
-    .modalOverlay {
-        bottom: 72px;
-        padding: 3rem 1rem 1.5rem;
-    }
-
-    .modalContent {
-        /*
-         * Available height = overlay height (100vh - 72px) minus padding (3rem top + 1.5rem bottom ≈ 72px)
-         * Width = available height × 0.75 so the 3:4 image always fits.
-         */
-        width: min(92vw, calc((100vh - 144px) * 0.75));
-        width: min(92vw, calc((100dvh - 144px) * 0.75));
-    }
-}
-
-@media (max-width: 480px) {
-    .modalOverlay {
-        bottom: 72px;
-        padding: 3rem 0.75rem 1rem;
-    }
 }

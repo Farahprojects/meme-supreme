@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
 import LibraryCard, { type LibraryTone } from "@/components/LibraryCard";
 import styles from "./page.module.css";
 
@@ -44,6 +45,7 @@ function thumbnailUrl(fullUrl: string): string {
 }
 
 export default function LibraryPage() {
+    const { user } = useAuth();
     const [items, setItems] = useState<LibraryImageRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -147,7 +149,7 @@ export default function LibraryPage() {
 
             {selected && (
                 <div
-                    className={styles.modalOverlay}
+                    className={`${styles.modalOverlay} ${user ? styles.modalOverlaySignedIn : ""}`}
                     onClick={closeModal}
                     role="dialog"
                     aria-modal="true"
