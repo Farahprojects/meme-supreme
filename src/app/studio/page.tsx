@@ -224,6 +224,7 @@ export default function StudioPage() {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${session.access_token}`,
+                    apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -290,6 +291,7 @@ export default function StudioPage() {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${session.access_token}`,
+                    apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ image_url: item.image_url, edit_instruction: instruction }),
