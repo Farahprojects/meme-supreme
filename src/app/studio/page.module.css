@@ -82,9 +82,27 @@
     flex-wrap: wrap;
 }
 
-.fileInput {
-    font-size: 0.875rem;
+.fileInputHidden {
+    display: none;
+}
+
+.fileLabel {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
     color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.fileLabel:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: var(--text-primary);
 }
 
 .referencePreview {

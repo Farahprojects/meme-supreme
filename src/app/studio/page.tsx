@@ -222,12 +222,15 @@ export default function StudioPage() {
                 <div className={styles.field}>
                     <label>Reference image (product, logo, place — optional)</label>
                     <div className={styles.referenceRow}>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => setReferenceFile(e.target.files?.[0] ?? null)}
-                            className={styles.fileInput}
-                        />
+                        <label className={styles.fileLabel}>
+                            + Image
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => setReferenceFile(e.target.files?.[0] ?? null)}
+                                className={styles.fileInputHidden}
+                            />
+                        </label>
                         {referencePreview && (
                             <div className={styles.referencePreview}>
                                 <img src={referencePreview} alt="Reference" />
