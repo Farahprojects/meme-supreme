@@ -45,6 +45,8 @@ function thumbnailUrl(fullUrl: string): string {
     return fullUrl;
 }
 
+type BindStatus = "idle" | "binding" | "success" | "error";
+
 export default function LibraryPage() {
     const { user } = useAuth();
     const [items, setItems] = useState<LibraryImageRow[]>([]);
@@ -52,6 +54,10 @@ export default function LibraryPage() {
     const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState<"all" | LibraryTone>("all");
     const [selected, setSelected] = useState<LibraryImageRow | null>(null);
+    const [editMode, setEditMode] = useState(false);
+    const [editNames, setEditNames] = useState("");
+    const [editCaption, setEditCaption] = useState("");
+    const [bindStatus, setBindStatus] = useState<BindStatus>("idle");
 
     const fetchItems = useCallback(async () => {
         setLoading(true);
@@ -80,7 +86,11 @@ export default function LibraryPage() {
             ? items
             : items.filter((row) => row.tone === filter);
 
-    const closeModal = useCallback(() => setSelected(null), []);
+    const closeModal = useCallback(() => {
+        setSelected(null);
+        setEditMode(false);
+        setBindStatus("idle");
+    }, []);
 
     useEffect(() => {
         if (!selected) return;
@@ -90,6 +100,50 @@ export default function LibraryPage() {
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
     }, [selected, closeModal]);
+
+    const handleSave = useCallback(async () => {
+        if (!selected || !user) return;
+        setBindStatus("binding");
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.access_token) {
+                setBindStatus("error");
+                return;
+            }
+            const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/library-bind`;
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    image_url: selected.image_url,
+                    names: editNames.trim() || null,
+                    caption: editCaption.trim(),
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setBindStatus("error");
+                return;
+            }
+            if (data.image_base64) {
+                const a = document.createElement("a");
+                a.href = `data:image/jpeg;base64,${data.image_base64}`;
+                a.download = `meme-supreme-${selected.tone}-${Date.now()}.jpg`;
+                a.click();
+                setBindStatus("success");
+                setTimeout(() => {
+                    closeModal();
+                }, 2000);
+            } else {
+                setBindStatus("error");
+            }
+        } catch {
+            setBindStatus("error");
+        }
+    }, [selected, user, editNames, editCaption, closeModal]);
 
     return (
         <div className={styles.wrap}>
@@ -142,7 +196,14 @@ export default function LibraryPage() {
                             tone={row.tone as LibraryTone}
                             alt={row.caption.slice(0, 80)}
                             thumbnail
-                            onClick={() => setSelected(row)}
+                            onClick={() => { setSelected(row); setEditMode(false); }}
+                            isSignedIn={!!user}
+                            onEdit={() => {
+                                setSelected(row);
+                                setEditMode(true);
+                                setEditNames(row.names ?? "");
+                                setEditCaption(row.caption);
+                            }}
                         />
                     ))}
                 </div>
@@ -168,14 +229,67 @@ export default function LibraryPage() {
                         >
                             ×
                         </button>
-                        <LibraryCard
-                            imageUrl={selected.image_url}
-                            caption={selected.caption}
-                            names={selected.names}
-                            tone={selected.tone as LibraryTone}
-                            alt={selected.caption.slice(0, 80)}
-                            thumbnail={false}
-                        />
+                        {editMode && user ? (
+                            <div className={styles.modalEditWrap}>
+                                <LibraryCard
+                                    imageUrl={selected.image_url}
+                                    caption=""
+                                    names=""
+                                    tone={selected.tone as LibraryTone}
+                                    alt={selected.caption.slice(0, 80)}
+                                    thumbnail={false}
+                                />
+                                <div className={styles.editOverlay}>
+                                    <input
+                                        type="text"
+                                        className={styles.editNamesInput}
+                                        value={editNames}
+                                        onChange={(e) => setEditNames(e.target.value)}
+                                        placeholder="Names"
+                                        aria-label="Edit names"
+                                    />
+                                    <div className={styles.editBottom}>
+                                        <textarea
+                                            className={styles.editCaptionInput}
+                                            value={editCaption}
+                                            onChange={(e) => setEditCaption(e.target.value)}
+                                            placeholder="Caption"
+                                            aria-label="Edit caption"
+                                            rows={3}
+                                        />
+                                        <button
+                                            type="button"
+                                            className={styles.saveBtn}
+                                            onClick={handleSave}
+                                            disabled={bindStatus === "binding"}
+                                            aria-label="Save and download"
+                                        >
+                                            {bindStatus === "binding"
+                                                ? "Generating…"
+                                                : bindStatus === "success"
+                                                    ? "Done!"
+                                                    : "Save"}
+                                        </button>
+                                    </div>
+                                </div>
+                                {bindStatus !== "idle" && (
+                                    <div className={styles.bindStatusOverlay} aria-live="polite">
+                                        {bindStatus === "binding" && "Generating your meme…"}
+                                        {bindStatus === "success" && "Done! Downloading…"}
+                                        {bindStatus === "error" && "Something went wrong. Try again."}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <LibraryCard
+                                imageUrl={selected.image_url}
+                                caption={selected.caption}
+                                names={selected.names}
+                                tone={selected.tone as LibraryTone}
+                                alt={selected.caption.slice(0, 80)}
+                                thumbnail={false}
+                            />
+                        )}
                     </div>
                 </div>
             )}
