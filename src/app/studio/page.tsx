@@ -206,17 +206,7 @@ export default function StudioPage() {
                             className={styles.input}
                         />
                     </div>
-                    <div className={styles.field}>
-                        <label htmlFor="studio-date">Optional date (e.g. for astrology)</label>
-                        <input
-                            id="studio-date"
-                            type="text"
-                            value={optionalDate}
-                            onChange={(e) => setOptionalDate(e.target.value)}
-                            placeholder="Name: YYYY-MM-DD"
-                            className={styles.input}
-                        />
-                    </div>
+                    {/* Date/astrology field hidden — re-enable when ready */}
                 </div>
                 <div className={styles.field}>
                     <label htmlFor="studio-context">Context / description</label>

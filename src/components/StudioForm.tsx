@@ -396,18 +396,6 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                             <div className={styles.labelsRow}>
                                 <label className={styles.flexLabel}>Name :</label>
                                 <div className={styles.flexLabelRight}>
-                                    <label className={styles.hintLabel}>
-                                        Optional
-                                        <button type="button" onClick={() => setShowHint(!showHint)} className={styles.hintButton}>
-                                            Hint ✨
-                                        </button>
-                                    </label>
-                                    {showHint && (
-                                        <div className={styles.hintTooltip}>
-                                            <p className={styles.hintTooltipTitle}>Birthday (optional)</p>
-                                            <p className={styles.hintTooltipText}>We use this to add astrology insights to your meme.</p>
-                                        </div>
-                                    )}
                                 </div>
                                 {targets.length > 1 && <div className={styles.emptySpacer}></div>}
                             </div>
@@ -426,17 +414,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                                         }}
                                         className={styles.targetInput}
                                     />
-                                    <input
-                                        type="text"
-                                        placeholder="YYYY-MM-DD"
-                                        value={target.date}
-                                        onChange={(e) => {
-                                            const newTargets = [...targets];
-                                            newTargets[idx].date = e.target.value;
-                                            setTargets(newTargets);
-                                        }}
-                                        className={styles.targetInput}
-                                    />
+                                    {/* Date/astrology field hidden — re-enable when ready */}
 
                                     {targets.length > 1 && (
                                         <button
