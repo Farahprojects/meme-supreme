@@ -394,7 +394,7 @@ export default function StudioForm({ initialOrderId, initialStep }: StudioFormPr
                     <div className={styles.form}>
                         <div className={styles.inputGroup}>
                             <div className={styles.labelsRow}>
-                                <label className={styles.flexLabel}>Name :</label>
+                                <label className={styles.flexLabel}>Name / Heading :</label>
                                 <div className={styles.flexLabelRight}>
                                 </div>
                                 {targets.length > 1 && <div className={styles.emptySpacer}></div>}

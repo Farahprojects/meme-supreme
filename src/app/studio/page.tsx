@@ -196,7 +196,7 @@ export default function StudioPage() {
             <section className={styles.formSection}>
                 <div className={styles.formGrid}>
                     <div className={styles.field}>
-                        <label htmlFor="studio-names">Names</label>
+                        <label htmlFor="studio-names">Name / Heading</label>
                         <input
                             id="studio-names"
                             type="text"
