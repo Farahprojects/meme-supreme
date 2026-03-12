@@ -8,6 +8,7 @@ import StudioMemeCard, { type StudioTone } from "@/components/StudioMemeCard";
 import styles from "./page.module.css";
 
 const TONES: StudioTone[] = ["roast", "funny", "sweet", "bold"];
+const HISTORY_DEFAULT_SHOW = 4;
 
 export interface MemeResult {
     meme_id: string;
@@ -18,6 +19,17 @@ export interface MemeResult {
 }
 
 type ResultState = MemeResult | "loading" | "error";
+
+interface HistoryItem {
+    id: string;
+    image_url: string;
+    caption: string;
+    names: string | null;
+    tone: StudioTone;
+    target_names: string | null;
+    context_description: string | null;
+    created_at: string;
+}
 
 function fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -48,6 +60,10 @@ export default function StudioPage() {
     });
     const [isGenerating, setIsGenerating] = useState(false);
     const [hasGenerated, setHasGenerated] = useState(false);
+    const [history, setHistory] = useState<HistoryItem[]>([]);
+    const [historyFetching, setHistoryFetching] = useState(false);
+    const [historyLoadingIds, setHistoryLoadingIds] = useState<Set<string>>(new Set());
+    const [showAllHistory, setShowAllHistory] = useState(false);
 
     useEffect(() => {
         if (authLoading) return;
@@ -66,6 +82,26 @@ export default function StudioPage() {
         setReferencePreview(url);
         return () => URL.revokeObjectURL(url);
     }, [referenceFile]);
+
+    const fetchHistory = useCallback(async () => {
+        if (!user) return;
+        setHistoryFetching(true);
+        const { data } = await supabase
+            .from("studio_memes")
+            .select("id, image_url, caption, names, tone, target_names, context_description, created_at")
+            .order("created_at", { ascending: false })
+            .limit(60);
+        setHistory((data ?? []) as HistoryItem[]);
+        setHistoryFetching(false);
+    }, [user]);
+
+    useEffect(() => {
+        if (user) fetchHistory();
+    }, [user, fetchHistory]);
+
+    const patchHistoryItem = useCallback((id: string, patch: Partial<HistoryItem>) => {
+        setHistory((prev) => prev.map((h) => (h.id === id ? { ...h, ...patch } : h)));
+    }, []);
 
     const fetchOneTone = useCallback(
         async (tone: StudioTone, referenceBase64?: string) => {
@@ -111,7 +147,8 @@ export default function StudioPage() {
             })
         );
         setIsGenerating(false);
-    }, [user, targetNames, context, referenceFile, fetchOneTone]);
+        fetchHistory();
+    }, [user, targetNames, context, referenceFile, fetchOneTone, fetchHistory]);
 
     const handleRegenerate = useCallback(
         async (tone: StudioTone) => {
@@ -173,6 +210,96 @@ export default function StudioPage() {
             return { ...prev, [tone]: { ...current, names } };
         });
     }, []);
+
+    const handleEditImage = useCallback(
+        async (tone: StudioTone, instruction: string) => {
+            const current = results[tone];
+            if (current === "loading" || current === "error") return;
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.access_token) throw new Error("Not signed in");
+
+            const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/studio-image-edit`;
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    image_url: current.image_url,
+                    edit_instruction: instruction,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.image_url) throw new Error(data.error ?? "Image edit failed");
+
+            setResults((prev) => {
+                const c = prev[tone];
+                if (c === "loading" || c === "error") return prev;
+                return { ...prev, [tone]: { ...c, image_url: data.image_url } };
+            });
+        },
+        [results]
+    );
+
+    const handleHistoryRegenerate = useCallback(
+        async (item: HistoryItem) => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.access_token) return;
+            setHistoryLoadingIds((prev) => new Set(prev).add(item.id));
+            try {
+                const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/studio-generator`;
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${session.access_token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        target_names: item.target_names ?? "",
+                        context_description: item.context_description ?? "",
+                        tone: item.tone,
+                    }),
+                });
+                const data = await res.json();
+                if (res.ok && data.image_url) {
+                    patchHistoryItem(item.id, {
+                        image_url: data.image_url,
+                        caption: data.caption,
+                        names: data.names ?? item.names,
+                    });
+                }
+            } finally {
+                setHistoryLoadingIds((prev) => {
+                    const next = new Set(prev);
+                    next.delete(item.id);
+                    return next;
+                });
+            }
+        },
+        [patchHistoryItem]
+    );
+
+    const handleHistoryEditImage = useCallback(
+        async (item: HistoryItem, instruction: string) => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.access_token) throw new Error("Not signed in");
+            const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/studio-image-edit`;
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ image_url: item.image_url, edit_instruction: instruction }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.image_url) throw new Error(data.error ?? "Image edit failed");
+            patchHistoryItem(item.id, { image_url: data.image_url });
+        },
+        [patchHistoryItem]
+    );
 
     if (authLoading || !user) {
         return (
@@ -296,10 +423,54 @@ export default function StudioPage() {
                                     onCaptionChange={(caption) => handleCaptionChange(tone, caption)}
                                     onNamesChange={(names) => handleNamesChange(tone, names)}
                                     onDownload={handleDownload}
+                                    onEditImage={(instruction) => handleEditImage(tone, instruction)}
                                 />
                             );
                         })}
                     </div>
+                </section>
+            )}
+
+            {(history.length > 0 || historyFetching) && (
+                <section className={styles.historySection}>
+                    <div className={styles.historyHeader}>
+                        <h2 className={styles.resultsTitle}>
+                            History
+                            {history.length > 0 && (
+                                <span className={styles.historyCount}>{history.length}</span>
+                            )}
+                        </h2>
+                        {history.length > HISTORY_DEFAULT_SHOW && (
+                            <button
+                                type="button"
+                                className={styles.showAllBtn}
+                                onClick={() => setShowAllHistory((v) => !v)}
+                            >
+                                {showAllHistory ? "Show less" : `Show all ${history.length}`}
+                            </button>
+                        )}
+                    </div>
+
+                    {historyFetching && history.length === 0 ? (
+                        <p className={styles.historyEmpty}>Loading history…</p>
+                    ) : (
+                        <div className={styles.grid}>
+                            {(showAllHistory ? history : history.slice(0, HISTORY_DEFAULT_SHOW)).map((item) => (
+                                <StudioMemeCard
+                                    key={item.id}
+                                    meme_id={item.id}
+                                    image_url={item.image_url}
+                                    caption={item.caption}
+                                    names={item.names}
+                                    tone={item.tone}
+                                    loading={historyLoadingIds.has(item.id)}
+                                    onRegenerate={() => handleHistoryRegenerate(item)}
+                                    onDownload={handleDownload}
+                                    onEditImage={(instruction) => handleHistoryEditImage(item, instruction)}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </section>
             )}
         </div>

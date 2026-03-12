@@ -190,6 +190,90 @@
     cursor: not-allowed;
 }
 
+.editImageBtn {
+    position: absolute;
+    top: 4%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.editImageBtn:hover,
+.editImageBtnActive {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.editingOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    border-radius: inherit;
+}
+
+.editImagePanel {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+}
+
+.editImageInput {
+    flex: 1;
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary, #0a0a0a);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-family: inherit;
+}
+
+.editImageInput:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.editImageSubmit {
+    padding: 0.45rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: var(--gray-900, #111);
+    color: white;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.editImageSubmit:hover:not(:disabled) {
+    opacity: 0.85;
+}
+
+.editImageSubmit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 .downloadSpinner {
     display: block;
     width: 16px;

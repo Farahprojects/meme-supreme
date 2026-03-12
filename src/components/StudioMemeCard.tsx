@@ -21,6 +21,8 @@ export interface StudioMemeCardProps {
     onNamesChange?: (names: string) => void;
     /** Called when user clicks Download; parent calls library-bind with (image_url, names, caption) and triggers download. */
     onDownload: (imageUrl: string, names: string, caption: string) => Promise<void>;
+    /** Called when user submits an image edit instruction; parent calls studio-image-edit and updates image_url. */
+    onEditImage?: (instruction: string) => Promise<void>;
     /** When true, show loading spinner instead of content. */
     loading?: boolean;
 }
@@ -35,12 +37,16 @@ export default function StudioMemeCard({
     onCaptionChange,
     onNamesChange,
     onDownload,
+    onEditImage,
     loading = false,
 }: StudioMemeCardProps) {
     const [caption, setCaption] = useState(initialCaption);
     const [names, setNames] = useState(initialNames ?? "");
     const [isDownloading, setIsDownloading] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
+    const [showEditInput, setShowEditInput] = useState(false);
+    const [editInstruction, setEditInstruction] = useState("");
+    const [isEditingImage, setIsEditingImage] = useState(false);
 
     useEffect(() => {
         setCaption(initialCaption);
@@ -76,6 +82,20 @@ export default function StudioMemeCard({
         if (isRegenerating) return;
         setIsRegenerating(true);
         onRegenerate();
+    };
+
+    const handleEditImageSubmit = async () => {
+        if (!editInstruction.trim() || isEditingImage || !onEditImage) return;
+        setIsEditingImage(true);
+        try {
+            await onEditImage(editInstruction.trim());
+            setEditInstruction("");
+            setShowEditInput(false);
+        } catch {
+            // parent handles error display
+        } finally {
+            setIsEditingImage(false);
+        }
     };
 
     if (loading) {
@@ -165,7 +185,48 @@ export default function StudioMemeCard({
                         <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
                     </svg>
                 </button>
+                {onEditImage && (
+                    <button
+                        type="button"
+                        className={`${styles.editImageBtn} ${showEditInput ? styles.editImageBtnActive : ""}`}
+                        onClick={() => setShowEditInput((v) => !v)}
+                        aria-label="Edit image"
+                        title="Edit image"
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z" />
+                        </svg>
+                    </button>
+                )}
+                {isEditingImage && (
+                    <div className={styles.editingOverlay}>
+                        <span className={styles.spinner} aria-hidden />
+                        <span className={styles.loadingText}>Editing image…</span>
+                    </div>
+                )}
             </div>
+            {showEditInput && onEditImage && !isEditingImage && (
+                <div className={styles.editImagePanel}>
+                    <input
+                        type="text"
+                        className={styles.editImageInput}
+                        value={editInstruction}
+                        onChange={(e) => setEditInstruction(e.target.value)}
+                        placeholder="e.g. make hair blonde, add red jacket…"
+                        aria-label="Image edit instruction"
+                        onKeyDown={(e) => e.key === "Enter" && handleEditImageSubmit()}
+                        autoFocus
+                    />
+                    <button
+                        type="button"
+                        className={styles.editImageSubmit}
+                        onClick={handleEditImageSubmit}
+                        disabled={!editInstruction.trim()}
+                    >
+                        Apply
+                    </button>
+                </div>
+            )}
         </article>
     );
 }
