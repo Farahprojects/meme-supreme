@@ -54,6 +54,9 @@ export const SEARCH_MODEL = "gemini-2.5-flash";
 /** Image generation (imageToolHandler, image-generate). Imagen 4 Fast. */
 export const IMAGEN_MODEL = "imagen-4.0-fast-generate-001";
 
+/** Vertex-capable Imagen 3 model (required for Subject Reference editing) */
+export const VERTEX_IMAGEN_MODEL = "imagen-3.0-capability-001";
+
 /** Plan values that get economy tier (Gemini 2.5 from the start, no cache). */
 export function getPlansUsingEconomyLlm(): string[] {
   const raw = Deno.env.get(ENV_LLM_ECONOMY_PLANS);

@@ -19,6 +19,11 @@ interface LibraryBindRequest {
     image_url: string;
     names?: string | null;
     caption: string;
+    text_style?: {
+        font?: string;
+        size?: string;
+        allCaps?: boolean;
+    };
 }
 
 Deno.serve(async (req) => {
@@ -56,7 +61,7 @@ Deno.serve(async (req) => {
         }
 
         const body = (await req.json()) as LibraryBindRequest;
-        const { image_url, names, caption } = body;
+        const { image_url, names, caption, text_style } = body;
         if (!image_url || typeof image_url !== "string" || !caption || typeof caption !== "string") {
             return new Response(
                 JSON.stringify({ error: "image_url and caption are required" }),
@@ -81,6 +86,7 @@ Deno.serve(async (req) => {
                     caption,
                     theme: "Roast",
                     watermark: "www.memesupreme.co",
+                    text_style: text_style ?? {},
                 },
             }),
         });

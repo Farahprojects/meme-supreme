@@ -119,6 +119,36 @@
     object-fit: cover;
 }
 
+.modeTabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.modeTab {
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.modeTab:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: var(--text-primary);
+}
+
+.modeTabActive {
+    background: var(--gray-900, #111);
+    color: #fff;
+    border-color: var(--gray-900, #111);
+}
+
 .generateBtn {
     width: 100%;
     padding: 0.85rem 1.5rem;
@@ -172,7 +202,7 @@
 }
 
 .errorCard {
-    aspect-ratio: 7 / 10;
+    aspect-ratio: 3 / 4;
     border-radius: var(--border-radius-md);
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -196,6 +226,57 @@
     font-size: 0.875rem;
     color: var(--text-secondary);
     margin: 0;
+}
+
+.carouselSlide {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: var(--bg-card);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.carouselSlideLink {
+    display: block;
+    aspect-ratio: 3 / 4;
+    position: relative;
+    overflow: hidden;
+}
+
+.carouselSlideImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.carouselSlideText {
+    padding: 0 0.75rem 0.25rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+    margin: 0;
+}
+
+.carouselDownloadBtn {
+    margin: 0 0.75rem 0.75rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--border-radius-md);
+    background: var(--gray-900, #111);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    font-family: inherit;
+}
+
+.carouselDownloadBtn:hover {
+    opacity: 0.9;
 }
 
 .retryBtn {
@@ -269,4 +350,413 @@
     color: var(--text-secondary);
     font-size: 0.9rem;
     padding: 2rem 0;
+}
+
+.historyActions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.viewAllLink {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.15s;
+}
+
+.viewAllLink:hover {
+    color: var(--text-primary);
+}
+
+/* ── Reels tab ──────────────────────────────────────────────── */
+
+.goalPills {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.goalPills .reelRefLabel {
+    margin-bottom: 0;
+    margin-right: 0.25rem;
+}
+
+.goalPill {
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: capitalize;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.goalPill:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: var(--text-primary);
+}
+
+.goalPillActive {
+    background: var(--gray-900, #111);
+    color: #fff;
+    border-color: var(--gray-900, #111);
+}
+
+/* ── Tone selection (Images tab) ── */
+.toneSection {
+    margin-bottom: 1rem;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.toneSectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.toneSectionLabel {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #666;
+}
+
+.toneAllBtn {
+    background: none;
+    border: none;
+    font-size: 0.75rem;
+    color: #666;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    transition: color 0.15s;
+}
+
+.toneAllBtn:hover {
+    color: #fff;
+}
+
+.tonePills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tonePill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    flex: 1;
+    justify-content: center;
+    min-width: 80px;
+}
+
+.tonePillActive {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+}
+
+.tonePillActive:hover {
+    background: #f0f0f0;
+}
+
+.tonePillInactive {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.tonePillInactive:hover {
+    color: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.tonePillCheck {
+    font-size: 0.75rem;
+    width: 10px;
+    display: inline-block;
+    text-align: center;
+}
+
+.scriptBtn {
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.scriptBtn:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.scriptBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.scriptBlock {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.scriptField {
+    margin-bottom: 1rem;
+}
+
+.scriptField:last-of-type {
+    margin-bottom: 0.5rem;
+}
+
+.scriptField label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+}
+
+.scriptRationale {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin: 0.75rem 0 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.reelRefRow {
+    margin-bottom: 1rem;
+}
+
+.reelRefLabel {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+}
+
+.reelRefSlots {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.reelRefSlot {
+    position: relative;
+}
+
+.reelRefSlot .referencePreview {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.reelRefSlot .referencePreview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.reelRefRemove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: var(--gray-900, #111);
+    color: white;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: opacity 0.15s;
+}
+
+.reelRefRemove:hover {
+    opacity: 0.9;
+}
+
+.reelProgress {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 1rem 0;
+}
+
+.reelError {
+    text-align: center;
+    color: #f87171;
+    font-size: 0.9rem;
+    margin: 1rem 0;
+}
+
+.reelResultSection {
+    max-width: 360px;
+    margin: 2rem auto;
+}
+
+/* ── Subscription gate ── */
+.gateWrap {
+    max-width: 480px;
+    margin: 10vh auto 0;
+    text-align: center;
+    padding: 0 1rem;
+}
+
+.gateLock {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #888;
+    margin-bottom: 1.5rem;
+}
+
+.gateTitle {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+}
+
+.gateSub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.gateFeatures {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+    display: inline-flex;
+}
+
+.gateFeatures li {
+    font-size: 0.9rem;
+    color: #aaa;
+    padding-left: 1.4rem;
+    position: relative;
+}
+
+.gateFeatures li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #ff00ff;
+    font-size: 0.85rem;
+}
+
+.gateBtn {
+    display: inline-block;
+    padding: 14px 32px;
+    border-radius: 100px;
+    background: linear-gradient(90deg, #ff00ff, #8000ff);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    box-shadow: 0 4px 20px rgba(255, 0, 255, 0.25);
+}
+
+.gateBtn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* ── Usage bar ── */
+.usageBar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 100px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.usageStat {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.usageAtLimit {
+    font-size: 0.8rem;
+    color: #f87171;
+    font-weight: 600;
+}
+
+.usageDivider {
+    font-size: 0.8rem;
+    color: #444;
+}
+
+.usagePeriod {
+    font-size: 0.8rem;
+    color: #555;
+}
+
+/* ── Limit message ── */
+.limitMsg {
+    font-size: 0.85rem;
+    color: #f87171;
+    text-align: center;
+    margin-bottom: 0.5rem;
 }

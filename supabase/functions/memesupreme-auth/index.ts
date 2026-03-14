@@ -8,10 +8,11 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 interface AuthRequest {
-  action: 'request_otc' | 'verify_otc';
+  action: 'request_otc' | 'verify_otc' | 'request_otc_reset' | 'verify_otc_reset';
   email: string;
-  token?: string; // Only needed for verify_otc
+  token?: string; // Only needed for verify_otc / verify_otc_reset
   password?: string;
+  new_password?: string; // Only for verify_otc_reset
 }
 
 // Generate a random 6-digit OTC
@@ -29,7 +30,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json() as AuthRequest;
-    const { action, email, token, password } = body;
+    const { action, email, token, password, new_password } = body;
 
     if (!email || typeof email !== 'string') {
       return new Response(JSON.stringify({ error: "Valid email is required" }), { status: 400, headers: corsHeaders });
@@ -211,6 +212,116 @@ Deno.serve(async (req) => {
         success: true,
         session: sessionData.session
       }), { status: 200, headers: corsHeaders });
+
+    } else if (action === 'request_otc_reset') {
+      // Check the user exists in user_profile — no need for auth_user_id here
+      const { data: profileRow } = await supabase
+        .from('user_profile')
+        .select('email')
+        .eq('email', normalizedEmail)
+        .single();
+
+      if (!profileRow) {
+        // Don't reveal whether the email exists
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+      }
+
+      const otc = generateOTC();
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 5);
+
+      const { error: otcError } = await supabase
+        .from('otc_tokens')
+        .insert({
+          email: normalizedEmail,
+          token: otc,
+          expires_at: expiresAt.toISOString()
+        });
+
+      if (otcError) {
+        console.error("OTC reset insert error:", otcError);
+        return new Response(JSON.stringify({ error: "Failed to generate reset code. Try again." }), { status: 500, headers: corsHeaders });
+      }
+
+      let emailHtml = `<p>Your password reset code is: <strong>${otc}</strong> (expires in 5 minutes)</p>`;
+      let emailSubject = "Reset your Meme Supreme password";
+
+      const { data: templateData, error: templateErr } = await supabase
+        .from("email_notification_templates")
+        .select("subject, body_html")
+        .eq("template_type", "auth_otc_reset")
+        .single();
+
+      if (!templateErr && templateData) {
+        emailHtml = templateData.body_html.replace(/\{\{otc\}\}/g, otc);
+        emailSubject = templateData.subject.replace(/\{\{otc\}\}/g, otc);
+      }
+
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/outbound-messenger`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+          body: JSON.stringify({ to: normalizedEmail, subject: emailSubject, html: emailHtml })
+        });
+      } catch (err) {
+        console.error("Outbound messenger error:", err);
+      }
+
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+
+    } else if (action === 'verify_otc_reset') {
+      if (!token) {
+        return new Response(JSON.stringify({ error: "Code is required" }), { status: 400, headers: corsHeaders });
+      }
+      if (!new_password || typeof new_password !== 'string' || new_password.length < 6) {
+        return new Response(JSON.stringify({ error: "New password must be at least 6 characters" }), { status: 400, headers: corsHeaders });
+      }
+
+      const { data: otcRecord, error: otcLookupError } = await supabase
+        .from('otc_tokens')
+        .select('*')
+        .eq('email', normalizedEmail)
+        .eq('token', token.trim())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (otcLookupError || !otcRecord) {
+        return new Response(JSON.stringify({ error: "Invalid code." }), { status: 400, headers: corsHeaders });
+      }
+
+      if (new Date(otcRecord.expires_at) < new Date()) {
+        await supabase.from('otc_tokens').delete().eq('id', otcRecord.id);
+        return new Response(JSON.stringify({ error: "Code has expired. Please request a new one." }), { status: 400, headers: corsHeaders });
+      }
+
+      await supabase.from('otc_tokens').delete().eq('id', otcRecord.id);
+
+      // Find the auth user by email — works without needing auth_user_id stored in user_profile
+      const { data: listData, error: listError } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      const authUser = listData?.users?.find((u) => u.email === normalizedEmail);
+
+      if (listError || !authUser) {
+        return new Response(JSON.stringify({ error: "Account not found. Please sign up." }), { status: 400, headers: corsHeaders });
+      }
+
+      const { error: updateError } = await supabase.auth.admin.updateUserById(authUser.id, { password: new_password });
+
+      if (updateError) {
+        console.error("Password update error:", updateError);
+        return new Response(JSON.stringify({ error: "Failed to update password. Try again." }), { status: 500, headers: corsHeaders });
+      }
+
+      const { data: sessionData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password: new_password
+      });
+
+      if (signInError || !sessionData.session) {
+        return new Response(JSON.stringify({ error: "Password updated but sign-in failed. Please sign in with your new password." }), { status: 500, headers: corsHeaders });
+      }
+
+      return new Response(JSON.stringify({ success: true, session: sessionData.session }), { status: 200, headers: corsHeaders });
 
     } else {
       return new Response(JSON.stringify({ error: "Invalid action" }), { status: 400, headers: corsHeaders });

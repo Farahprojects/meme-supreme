@@ -51,6 +51,9 @@ export default function Header({ onCreateClick }: HeaderProps) {
                     <Link href="/library" className={styles.navLink}>
                         Library
                     </Link>
+                    <Link href="/pricing" className={styles.navLink}>
+                        Pricing
+                    </Link>
                     <Link href="/terms" className={styles.navLink}>
                         Terms
                     </Link>

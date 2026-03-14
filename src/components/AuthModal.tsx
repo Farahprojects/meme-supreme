@@ -10,7 +10,7 @@ interface AuthModalProps {
     onClose: () => void;
 }
 
-type AuthStep = "email" | "otc";
+type AuthStep = "email" | "otc" | "forgot_email" | "forgot_otc";
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     const router = useRouter();
@@ -20,6 +20,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmNewPassword, setConfirmNewPassword] = useState("");
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
     const [otc, setOtc] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -181,6 +185,88 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         }
     };
 
+    const handleForgotEmailSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email?.trim()) return;
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/memesupreme-auth`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify({ action: "request_otc_reset", email: email.trim().toLowerCase() }),
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || "Failed to send reset code.");
+            }
+            setSuccess("If an account exists, we sent a reset code to your email.");
+            setStep("forgot_otc");
+        } catch (err: any) {
+            setError(err.message || "Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleForgotOtcSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!otc || otc.length !== 6) {
+            setError("Please enter the 6-digit code.");
+            return;
+        }
+        if (newPassword.length < 6) {
+            setError("New password must be at least 6 characters.");
+            return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/memesupreme-auth`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify({
+                    action: "verify_otc_reset",
+                    email: email.trim().toLowerCase(),
+                    token: otc,
+                    new_password: newPassword,
+                }),
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || "Invalid code or failed to reset.");
+            }
+            const data = await res.json();
+            if (data.session) {
+                const { error: sessionError } = await supabase.auth.setSession(data.session);
+                if (sessionError) throw new Error("Failed to sign in after reset.");
+                setSuccess("Password updated. Redirecting...");
+                setTimeout(() => {
+                    onClose();
+                    router.push("/dashboard");
+                }, 1000);
+            } else {
+                throw new Error("No session returned.");
+            }
+        } catch (err: any) {
+            setError(err.message || "Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleReset = () => {
         setStep("email");
         setOtc("");
@@ -188,6 +274,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         setConfirmPassword("");
         setShowPassword(false);
         setShowConfirmPassword(false);
+        setNewPassword("");
+        setConfirmNewPassword("");
+        setShowNewPassword(false);
+        setShowConfirmNewPassword(false);
         setError(null);
         setSuccess(null);
     };
@@ -200,19 +290,112 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 </button>
 
                 <h2 className={styles.title}>
-                    {step === "email" ? (isSignUpIntent ? "Join Supreme" : "Welcome Back") : "Check your email"}
+                    {step === "email" && (isSignUpIntent ? "Join Supreme" : "Welcome Back")}
+                    {step === "otc" && "Check your email"}
+                    {step === "forgot_email" && "Reset password"}
+                    {step === "forgot_otc" && "Enter code & new password"}
                 </h2>
                 <p className={styles.subtitle}>
-                    {step === "email"
-                        ? (isSignUpIntent ? "Create an account to save your memes to the cloud." : "Sign in to access your vault from any device.")
-                        : `We sent a 6-digit code to ${email}`
-                    }
+                    {step === "email" && (isSignUpIntent ? "Create an account to save your memes to the cloud." : "Sign in to access your vault from any device.")}
+                    {step === "otc" && `We sent a 6-digit code to ${email}`}
+                    {step === "forgot_email" && "Enter your email and we'll send a reset code."}
+                    {step === "forgot_otc" && `Enter the code we sent to ${email} and choose a new password.`}
                 </p>
 
                 {error && <div className={styles.error}>{error}</div>}
                 {success && <div className={styles.success}>{success}</div>}
 
-                {step === "email" ? (
+                {step === "forgot_email" && (
+                    <form className={styles.form} onSubmit={handleForgotEmailSubmit}>
+                        <div className={styles.inputGroup}>
+                            <label>Email Address</label>
+                            <input
+                                type="email"
+                                placeholder="you@example.com"
+                                className={styles.input}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <button className={styles.submitBtn} disabled={loading || !email?.trim()}>
+                            {loading ? "Sending..." : "Send Reset Code"}
+                        </button>
+                        <button type="button" className={styles.secondaryBtn} onClick={() => { setStep("email"); setError(null); setSuccess(null); }} style={{ background: "transparent", border: "none", color: "#666", marginTop: "12px", cursor: "pointer", width: "100%" }}>
+                            Back to sign in
+                        </button>
+                    </form>
+                )}
+
+                {step === "forgot_otc" && (
+                    <form className={styles.form} onSubmit={handleForgotOtcSubmit}>
+                        <div className={styles.inputGroup}>
+                            <label>6-Digit Code</label>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={6}
+                                placeholder="123456"
+                                className={styles.input}
+                                value={otc}
+                                onChange={(e) => setOtc(e.target.value.replace(/\D/g, ""))}
+                                style={{ letterSpacing: "8px", fontSize: "1.2rem", textAlign: "center", fontWeight: "bold" }}
+                                required
+                            />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label>New Password</label>
+                            <div className={styles.passwordWrapper}>
+                                <input
+                                    type={showNewPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    className={styles.input}
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    minLength={6}
+                                    required
+                                />
+                                <button type="button" className={styles.eyeIcon} onClick={() => setShowNewPassword(!showNewPassword)} tabIndex={-1} aria-label="Toggle password visibility">
+                                    {showNewPassword ? (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"></path></svg>
+                                    ) : (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label>Confirm New Password</label>
+                            <div className={styles.passwordWrapper}>
+                                <input
+                                    type={showConfirmNewPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    className={styles.input}
+                                    value={confirmNewPassword}
+                                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                    minLength={6}
+                                    required
+                                />
+                                <button type="button" className={styles.eyeIcon} onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)} tabIndex={-1} aria-label="Toggle password visibility">
+                                    {showConfirmNewPassword ? (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"></path></svg>
+                                    ) : (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                        <button className={styles.submitBtn} disabled={loading || otc.length !== 6 || newPassword.length < 6 || newPassword !== confirmNewPassword}>
+                            {loading ? "Resetting..." : "Reset Password"}
+                        </button>
+                        <button type="button" className={styles.secondaryBtn} onClick={() => { setStep("forgot_email"); setError(null); setSuccess(null); }} style={{ background: "transparent", border: "none", color: "#666", marginTop: "12px", cursor: "pointer", width: "100%" }}>
+                            Use a different email
+                        </button>
+                    </form>
+                )}
+
+                {step === "email" && (
                     <form className={styles.form} onSubmit={handleEmailSubmit}>
                         <div className={styles.inputGroup}>
                             <label>Email Address</label>
@@ -253,6 +436,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                             </div>
                         </div>
 
+                        {!isSignUpIntent && (
+                            <div className={styles.inputGroup} style={{ marginTop: "-8px" }}>
+                                <button type="button" className={styles.forgotLink} onClick={() => { setError(null); setSuccess(null); setStep("forgot_email"); }}>
+                                    Forgot password?
+                                </button>
+                            </div>
+                        )}
+
                         {isSignUpIntent && (
                             <div className={styles.inputGroup}>
                                 <label>Confirm Password</label>
@@ -287,7 +478,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                             {loading ? "Please wait..." : (isSignUpIntent ? "Sign Up" : "Sign In")}
                         </button>
                     </form>
-                ) : (
+                )}
+
+                {step === "otc" && (
                     <form className={styles.form} onSubmit={handleOtcSubmit}>
                         <div className={styles.inputGroup}>
                             <label>6-Digit Code</label>

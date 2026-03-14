@@ -43,12 +43,12 @@ export default function Sidebar() {
         }
 
         if (pathname === '/') {
-            const storeSection = document.getElementById("store");
-            if (storeSection) {
-                storeSection.scrollIntoView({ behavior: "smooth" });
+            const productsSection = document.getElementById("products");
+            if (productsSection) {
+                productsSection.scrollIntoView({ behavior: "smooth" });
             }
         } else {
-            router.push('/#store');
+            router.push('/#products');
         }
     };
 
@@ -74,6 +74,32 @@ export default function Sidebar() {
                             </svg>
                         </Link>
                     )}
+                    {user && (
+                        <Link href="/studio/history" className={styles.navIconLink} aria-label="My Images" title="My Images">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="3" width="7" height="9" rx="1" />
+                                <rect x="14" y="3" width="7" height="5" rx="1" />
+                                <rect x="14" y="12" width="7" height="9" rx="1" />
+                                <rect x="3" y="16" width="7" height="5" rx="1" />
+                            </svg>
+                        </Link>
+                    )}
+                    {user && (
+                        <Link href="/studio/editor" className={styles.navIconLink} aria-label="Video Editor" title="Video Editor">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" />
+                                <line x1="8" y1="21" x2="16" y2="21" />
+                                <line x1="12" y1="17" x2="12" y2="21" />
+                            </svg>
+                        </Link>
+                    )}
+                    <Link href="/pricing" className={styles.navIconLink} aria-label="Pricing" title="Pricing">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23" />
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                    </Link>
+
                     {process.env.NODE_ENV === "development" && (
                         <Link href="/dev/library-generator" className={styles.devLink} aria-label="Library Generator (Dev)" title="Seed Library (Dev)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

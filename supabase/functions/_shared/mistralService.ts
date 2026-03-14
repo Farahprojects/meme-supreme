@@ -117,6 +117,9 @@ export class MistralService {
             max_tokens: config.maxOutputTokens || 8000
         };
 
+        if (config.topP !== undefined) requestBody.top_p = config.topP;
+        if (config.presencePenalty !== undefined) requestBody.presence_penalty = config.presencePenalty;
+        if (config.frequencyPenalty !== undefined) requestBody.frequency_penalty = config.frequencyPenalty;
         if (tools) requestBody.tools = tools;
         if (config.toolConfig?.functionCallingConfig?.mode === "AUTO") {
             requestBody.tool_choice = "auto";
@@ -215,6 +218,9 @@ export class MistralService {
             max_tokens: config.maxOutputTokens || 8000
         };
 
+        if (config.topP !== undefined) requestBody.top_p = config.topP;
+        if (config.presencePenalty !== undefined) requestBody.presence_penalty = config.presencePenalty;
+        if (config.frequencyPenalty !== undefined) requestBody.frequency_penalty = config.frequencyPenalty;
         if (tools) requestBody.tools = tools;
         if (config.toolConfig?.functionCallingConfig?.mode === "AUTO") {
             requestBody.tool_choice = "auto";

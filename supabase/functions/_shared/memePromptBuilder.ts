@@ -11,7 +11,8 @@ export function buildMemeRoastPrompt(
     contextDescription: string,
     optionalDate: string | undefined,
     tone: string = 'roast',
-    styleDescription: string
+    styleDescription: string,
+    pastCaptions: string[] = []
 ): string {
     const signInfo = optionalDate ? `
 Birth Data: ${optionalDate}
@@ -23,13 +24,13 @@ Birth Data: ${optionalDate}
     if (normalizedTone === "roast") {
         toneRules = `
 - Write a roast caption that makes people stop scrolling and say "LMAO that's so true."
-- A great roast = one SPECIFIC behaviour or quirk + an unexpected but undeniable truth about it.
-- The target should laugh too. This is affectionate mockery, not an attack.
-- STRUCTURE TO AIM FOR: call out a specific action or habit → land the absurd but true punchline. Example format: "does [specific thing] then acts like [unexpected contrast]" or "[specific behaviour] energy but [ironic truth]."
-- AVOID THE OBVIOUS ANGLE. Never write the first joke that comes to mind (e.g. if the topic is a brand, do NOT write a price complaint — dig one level deeper into the behaviour of the people who use it).
-- Dig into: the gap between who they think they are vs what they actually do. The self-delusion. The ritual. The habit they'd never admit.
+- CRITICAL RULE: Roast the INDUSTRY TROPE, SHARED BEHAVIOUR, or RELATABLE SITUATION — never the brand or person directly. The brand/person is IN ON THE JOKE, not the butt of it. They should want to repost this themselves.
+- Think of it as: the brand laughing at its own customers, its own industry, or the ridiculous situations that come with what they do. Not self-deprecation — self-awareness.
+- A great roast = one SPECIFIC shared behaviour or cultural truth that everyone in that world recognises + the absurd but undeniable punchline about it.
+- STRUCTURE TO AIM FOR: call out a shared ritual or industry quirk → land the "why is this so true" punchline. Example formats: "every [customer/client] who [does specific thing]" or "the [industry] experience of [relatable situation]" or "[shared behaviour] and somehow we're all surprised."
+- AVOID THE OBVIOUS ANGLE. Never write the first joke that comes to mind. Dig one level deeper — into the habits, rituals, or unspoken rules of the space.
 - Keep it SHORT. The best roast captions land in 6–10 words. Punchy always beats clever-but-long.
-- SAFETY: Never attack physical appearance, race, body, age, gender, mental health, or worth as a person. Roast the CHOICES and BEHAVIOURS only.`;
+- SAFETY: Never attack appearance, race, body, age, gender, mental health, or personal worth. Roast the SITUATION and SHARED BEHAVIOURS only.`;
     } else if (normalizedTone === "funny") {
         toneRules = `
 - Write a caption that makes someone laugh out loud, then immediately send it to a group chat.
@@ -63,18 +64,32 @@ Birth Data: ${optionalDate}
 - Based on the user's provided context, write a meme caption that captures the requested tone: ${normalizedTone}.`;
     }
 
+    const historySection = pastCaptions.length > 0
+        ? `
+### BANNED ANGLES (HISTORY)
+Below are captions generated for this user in the past. 
+CRITICAL: These likely relate to COMPLETELY DIFFERENT topics (e.g., bathrooms, cars, work). 
+Do NOT use these as inspiration. Do NOT reference their themes. 
+They are provided ONLY so you can avoid repeating the same punchline.
+${pastCaptions.map((c, i) => `${i + 1}. "${c}"`).join("\n")}
+` : '';
+
     return `You are an expert modern meme creator. Return ONLY strict JSON.
 
+${historySection}
+
+### CURRENT TASK
 TARGET(S): ${targetNames}${signInfo}
 REQUESTED TONE: ${normalizedTone.toUpperCase()}
 
-USER PROVIDED CONTEXT FOR THE MEME:
+USER PROVIDED CONTEXT (STICK TO THIS):
 "${contextDescription}"
 
 SCENE STYLE (locked; must be followed exactly):
 ${styleDescription}
 
 RULES:${toneRules}
+- CRITICAL: Focus strictly on the USER PROVIDED CONTEXT above. If the history contains "bathrooms" and the current context is "restaurants", do NOT make bathroom jokes.
 - CRITICAL NO-CELEBRITIES RULE: NEVER use names of real celebrities, public figures, politicians, or copyrighted characters (e.g., Zendaya, Gordon Gekko, Elon Musk) in the imagePrompt. It will instantly trigger AI safety filters and hard-fail. Describe generic outfits, styles, or vibes instead.
 - CRITICAL IMAGE SAFETY RULES (violations cause hard failures): NEVER reference brand names, apps, or platforms (e.g. Discord, Instagram, TikTok, Netflix) in the imagePrompt. NEVER reference specific internet meme formats or characters (e.g. Doge, Shiba Inu, specific meme templates).
 - Caption must read like a modern internet meme.

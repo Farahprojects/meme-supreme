@@ -40,9 +40,11 @@ That question is what sells the Starter Pack.
 
 ---
 
-### The number that matters
+### The numbers that matter
 
-**40 memes per month** — roughly 10 per week.
+**48 images per month** — 12 per week, one sitting per week.
+
+**5 reels per month** *(Beta)* — AI-scripted 8–15 second reels. Priced conservatively while Veo is in preview.
 
 That maps directly to how creators and social managers plan content.
 Weekly batches. One sitting. Done.
@@ -55,13 +57,12 @@ One **generation run** takes a single prompt and produces:
 
 | Output | Detail |
 |---|---|
-| 5 images | One per tone: Funny, Roast, Sweet, Bold + one user-chosen tone |
-| 5 captions | One per image, generated to match the tone |
-| 1 ZIP export | All 5 images, PNG, 4:5 Instagram-ready |
+| 4 images | One per tone: Funny, Roast, Sweet, Bold |
+| 4 captions | One per image, generated to match the tone |
 
-The subscriber picks their favourite. Edits the caption freely. Binds it. Done.
+The subscriber picks their favourite. Edits the caption freely. Binds and downloads. Done.
 
-**8 generation runs per month = 40 memes per month.**
+**12 generation runs per month = 48 images per month.**
 
 ---
 
@@ -69,42 +70,32 @@ The subscriber picks their favourite. Edits the caption freely. Binds it. Done.
 
 | Feature | Amount |
 |---|---|
-| Generation runs | 8 |
-| Total memes generated | 40 |
-| Image edits | 10 per run / 80 per month |
+| Generation runs | 12 |
+| Total images generated | 48 |
+| Image tweaks & edits | Unlimited |
 | Caption rewrites | Unlimited |
+| Reels (Beta) | 5 per month |
 | PNG export | Included |
-| ZIP batch download | Included |
 | Output format | 4:5 Instagram-ready |
 
 ---
 
-### What counts as an image edit
+### Why unlimited edits
 
-One edit = one image action on an **existing generated meme**:
-
-- Tweak image vibe
-- Add or remove a product
-- Change background
-- Sharpen expression
-- Regenerate this image in the same tone
-
-**10 edits per run.** Enough to refine without overthinking.
+Image editing (vibe tweaks, product insertion, background changes) costs very little per call.
+Capping edits creates unnecessary friction — users should be able to refine freely.
+The generation run count (12/month) is the natural throttle.
 
 ---
 
-### What does NOT count as an edit
+### What is a reel
 
-Caption work is **unlimited** and never counts toward any limit:
+One reel = one AI-scripted video:
+- **Single reel**: 8 seconds
+- **Continuous reel**: 15 seconds (8s + 7s extension, counts as 1)
 
-- Rewrite caption
-- Make it shorter
-- Make it punchier
-- Make it brand-safe
-- Change the tone of the caption only
-
-Text generation cost is tiny. Caption freedom removes the #1 creative friction point.
-Users should never feel blocked by a caption they don't love.
+Each reel is generated from a Gemini-scripted prompt based on user description + goal.
+Cost to us: ~$0.40/reel. Beta allowance: 5/month.
 
 ---
 

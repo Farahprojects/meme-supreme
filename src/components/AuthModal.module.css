@@ -151,6 +151,22 @@
     color: #fff;
 }
 
+.forgotLink {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.forgotLink:hover {
+    color: #ff00ff;
+}
+
 .submitBtn {
     margin-top: 12px;
     padding: 10px 20px;

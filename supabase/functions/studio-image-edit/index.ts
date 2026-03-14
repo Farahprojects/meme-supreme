@@ -10,8 +10,8 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 const GOOGLE_API_KEY = Deno.env.get("GOOGLE-MEME");
 
-// Imagen 3 editing model (Imagen 4 has no edit model)
-const EDIT_MODEL = "imagen-3.0-capability-001";
+// Gemini 3.1 Flash Image model for Developer API text/image editing
+const EDIT_MODEL = "gemini-3.1-flash-image-preview";
 
 const CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
@@ -31,7 +31,8 @@ function decodeBase64(base64: string): Uint8Array {
 
 interface StudioImageEditRequest {
     image_url: string;
-    edit_instruction: string;
+    edit_instruction?: string;
+    product_image_base64?: string;
 }
 
 Deno.serve(async (req) => {
@@ -75,15 +76,21 @@ Deno.serve(async (req) => {
         }
 
         const body = (await req.json()) as StudioImageEditRequest;
-        const { image_url, edit_instruction } = body;
+        const { image_url, edit_instruction, product_image_base64 } = body;
 
-        if (!image_url || !edit_instruction?.trim()) {
+        if (!image_url) {
             return new Response(
-                JSON.stringify({ error: "image_url and edit_instruction are required" }),
+                JSON.stringify({ error: "image_url is required" }),
                 { status: 400, headers: CORS_HEADERS }
             );
         }
-        if (edit_instruction.length > 500) {
+        if (!edit_instruction?.trim() && !product_image_base64) {
+            return new Response(
+                JSON.stringify({ error: "edit_instruction or product_image_base64 is required" }),
+                { status: 400, headers: CORS_HEADERS }
+            );
+        }
+        if (edit_instruction && edit_instruction.length > 500) {
             return new Response(
                 JSON.stringify({ error: "Edit instruction too long (max 500 characters)" }),
                 { status: 400, headers: CORS_HEADERS }
@@ -106,30 +113,39 @@ Deno.serve(async (req) => {
         }
         const base64Original = btoa(binary);
 
-        // Call Imagen editImage
+        // Build prompt parts — product upload takes priority over text instruction
         const genAI = new GoogleGenAI({ apiKey: GOOGLE_API_KEY });
-        const editResp = await genAI.models.editImage({
+        let promptText: string;
+        const promptParams: unknown[] = [];
+
+        if (product_image_base64) {
+            promptText = edit_instruction?.trim()
+                ? `${edit_instruction.trim()}. Naturally incorporate the product or logo from the second image into the scene. Place it where it makes visual sense — on a table, in someone's hand, on clothing, or as a background element. Preserve the meme energy, composition, lighting, and people in the original image. Full-bleed portrait image, no borders or frames.`
+                : "Naturally incorporate the product or logo from the second image into the scene. Place it where it makes visual sense — on a table, in someone's hand, on clothing, or as a background element. Preserve the meme energy, composition, lighting, and people in the original image. Full-bleed portrait image, no borders or frames.";
+            promptParams.push(
+                { text: promptText },
+                { inlineData: { mimeType: "image/jpeg", data: base64Original } },
+                { inlineData: { mimeType: "image/jpeg", data: product_image_base64 } },
+            );
+        } else {
+            promptText = `${edit_instruction!.trim()}. Keep the overall scene, composition, lighting, and people identical. Only apply the requested change. Full-bleed portrait image, no borders or frames.`;
+            promptParams.push(
+                { text: promptText },
+                { inlineData: { mimeType: "image/jpeg", data: base64Original } },
+            );
+        }
+
+        const editResp = await genAI.models.generateContent({
             model: EDIT_MODEL,
-            prompt: `${edit_instruction.trim()}. Keep the overall scene, composition, lighting, and people identical. Only apply the requested change. Full-bleed portrait image, no borders or frames.`,
-            referenceImages: [
-                {
-                    referenceType: "REFERENCE_TYPE_RAW",
-                    referenceId: 1,
-                    referenceImage: {
-                        imageBytes: base64Original,
-                    },
-                },
-            ],
-            config: {
-                numberOfImages: 1,
-                personGeneration: "allow_adult",
-            },
+            contents: [{ role: "user", parts: promptParams }],
         });
 
-        const resultBytes = editResp.generatedImages?.[0]?.image?.imageBytes;
+        const part = editResp.candidates?.[0]?.content?.parts?.[0];
+        const resultBytes = part?.inlineData?.data;
+
         if (!resultBytes) {
             return new Response(
-                JSON.stringify({ error: "Edit was blocked or failed. Try a different instruction." }),
+                JSON.stringify({ error: "Edit was blocked or failed. Try a different instruction. Response: " + (part?.text || "No inline image returned") }),
                 { status: 400, headers: CORS_HEADERS }
             );
         }

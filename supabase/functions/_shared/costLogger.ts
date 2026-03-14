@@ -51,21 +51,15 @@ export const PricingConfig: Record<string, PricingModel> = {
     },
     'gemini-2.5-flash': {
         inputCostPerUnit: 0.0000003,  // $0.30 per 1M input
-        outputCostPerUnit: 0.0000002,  // $0.20 per 1M output (20c/1M out)
+        outputCostPerUnit: 0.0000002,  // $0.20 per 1M output
         unitType: 'tokens',
         description: 'Gemini 2.5 Flash'
     },
-    'gemini-2.0-flash-exp': {
-        inputCostPerUnit: 0.0000001, // ~$0.10 per 1M tokens
-        outputCostPerUnit: 0.0000004, // ~$0.40 per 1M tokens
+    'gemini-2.5-flash-preview-04-17': {
+        inputCostPerUnit: 0.0000003,  // $0.30 per 1M input
+        outputCostPerUnit: 0.0000002,  // $0.20 per 1M output
         unitType: 'tokens',
-        description: 'Gemini 2.0 Flash Experimental'
-    },
-    'gemini-2.0-flash-001': {
-        inputCostPerUnit: 0.0000001,
-        outputCostPerUnit: 0.0000004,
-        unitType: 'tokens',
-        description: 'Gemini 2.0 Flash Production'
+        description: 'Gemini 2.5 Flash Preview'
     },
     'gemini-1.5-flash': {
         inputCostPerUnit: 0.000000075, // Lower tier example

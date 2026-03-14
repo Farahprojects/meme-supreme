@@ -1,0 +1,67 @@
+.card {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--border-radius-md, 12px);
+    overflow: hidden;
+    background-color: var(--bg-card, #1a1a1a);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    transition: transform var(--transition-normal, 0.2s ease), box-shadow var(--transition-normal, 0.2s ease);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+.videoWrapper {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    width: 100%;
+    background: #000;
+}
+
+.video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.actionBar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    height: 46px;
+    background: var(--bg-card, #1a1a1a);
+    border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    flex-shrink: 0;
+}
+
+.actionBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--gray-900, #111);
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.actionBtn:hover {
+    opacity: 0.9;
+    background: var(--gray-800, #222);
+}
+
+.actionBtn svg {
+    flex-shrink: 0;
+}

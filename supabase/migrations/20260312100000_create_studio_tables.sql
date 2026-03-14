@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS public.studio_memes (
 
 ALTER TABLE public.studio_memes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users see own studio memes" ON public.studio_memes;
 CREATE POLICY "Users see own studio memes"
 ON public.studio_memes FOR ALL
 USING (auth.uid() = user_id);
@@ -26,26 +27,30 @@ VALUES (
     'studio-images',
     true,
     52428800,
-    ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+    ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif']
 )
 ON CONFLICT (id) DO UPDATE SET
-    allowed_mime_types = ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    allowed_mime_types = ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
 
+DROP POLICY IF EXISTS "Public read studio-images bucket" ON storage.objects;
 CREATE POLICY "Public read studio-images bucket"
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'studio-images');
 
+DROP POLICY IF EXISTS "Insert studio-images" ON storage.objects;
 CREATE POLICY "Insert studio-images"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (bucket_id = 'studio-images');
 
+DROP POLICY IF EXISTS "Update studio-images" ON storage.objects;
 CREATE POLICY "Update studio-images"
 ON storage.objects FOR UPDATE
 TO authenticated
 USING (bucket_id = 'studio-images');
 
+DROP POLICY IF EXISTS "Delete studio-images" ON storage.objects;
 CREATE POLICY "Delete studio-images"
 ON storage.objects FOR DELETE
 TO authenticated

@@ -1,0 +1,364 @@
+.wrap {
+    min-height: 100vh;
+    padding: 2rem 1.5rem 6rem;
+}
+
+/* ── Page header ──────────────────── */
+.pageHeader {
+    max-width: 800px;
+    margin: 0 auto 2.5rem;
+}
+
+.title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.4rem;
+}
+
+.titleAccent {
+    font-style: italic;
+    font-weight: 300;
+}
+
+.subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary, #a1a1aa);
+    font-weight: 400;
+}
+
+/* ── Subscription gate ────────────── */
+.gateWrap {
+    max-width: 480px;
+    margin: 6rem auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.gateTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.gateText {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.clearBtn {
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.clearBtn:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.gateBtn {
+    padding: 0.75rem 2rem;
+    border-radius: var(--border-radius-md, 16px);
+    background: var(--gray-900, #111);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.2s;
+}
+
+.gateBtn:hover {
+    opacity: 0.85;
+}
+
+/* ── Generate From Idea ───────────── */
+.ideaSection {
+    max-width: 640px;
+    margin: 0 auto 2.5rem;
+}
+
+.ideaLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.6rem;
+    display: block;
+}
+
+.ideaInputRow {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.ideaInput {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    border-radius: var(--border-radius-md, 16px);
+    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+    background: var(--bg-card, #222);
+    color: var(--text-primary, #fff);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.15s;
+    resize: none;
+    min-height: 52px;
+    line-height: 1.5;
+}
+
+.ideaInput:focus {
+    outline: none;
+    border-color: rgba(255,255,255,0.3);
+}
+
+.ideaInput::placeholder {
+    color: rgba(255,255,255,0.25);
+}
+
+.ideaBtn {
+    padding: 0.7rem 1.25rem;
+    border-radius: var(--border-radius-md, 16px);
+    background: var(--gray-900, #111);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+    min-height: 52px;
+}
+
+.ideaBtn:hover:not(:disabled) {
+    opacity: 0.85;
+}
+
+.ideaBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.ideaSpinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 0.35rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Timeline bar ─────────────────── */
+.timelineBar {
+    max-width: 1200px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card, #222);
+    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+    border-radius: 12px;
+}
+
+.timelineMeta {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.metaItem {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.metaValue {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.createVideoBtn {
+    padding: 0.55rem 1.25rem;
+    border-radius: 10px;
+    background: var(--gray-900, #111);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+
+.createVideoBtn:hover:not(:disabled) {
+    opacity: 0.85;
+}
+
+.createVideoBtn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* ── Timeline scroll ──────────────── */
+.timelineOuter {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.timelineScroll {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 1rem;
+    /* Scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+.timelineScroll::-webkit-scrollbar {
+    height: 4px;
+}
+
+.timelineScroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.timelineScroll::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px;
+}
+
+.timelineInner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem 0.25rem 0.5rem;
+    min-width: max-content;
+}
+
+/* Arrow connector between cards */
+.arrow {
+    display: flex;
+    align-items: center;
+    padding-top: 120px; /* align with ~middle of preview area */
+    color: rgba(255,255,255,0.2);
+    flex-shrink: 0;
+}
+
+/* ── Add scene button ─────────────── */
+.addSceneBtn {
+    width: 200px;
+    flex-shrink: 0;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    border: 1.5px dashed rgba(255,255,255,0.15);
+    background: transparent;
+    border-radius: 14px;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    align-self: flex-start;
+}
+
+.addSceneBtn:hover {
+    border-color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.6);
+}
+
+.addIconWrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Empty state ──────────────────── */
+.emptyState {
+    text-align: center;
+    padding: 5rem 1rem;
+    color: var(--text-secondary);
+}
+
+.emptyTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.emptyText {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.emptyAddBtn {
+    padding: 0.7rem 1.75rem;
+    border-radius: var(--border-radius-md, 16px);
+    background: var(--gray-900, #111);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.2s;
+}
+
+.emptyAddBtn:hover {
+    opacity: 0.85;
+}
+
+/* ── Error / info banners ─────────── */
+.errorBanner {
+    max-width: 640px;
+    margin: 0 auto 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    background: rgba(255, 107, 107, 0.08);
+    border: 1px solid rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* ── Loading ──────────────────────── */
+.loadingState {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}

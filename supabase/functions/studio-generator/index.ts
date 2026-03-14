@@ -2,15 +2,14 @@
 // JWT auth, optional reference image → Gemini Vision, then Mistral + Imagen, save to studio_memes.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.6";
-import { GoogleGenAI } from "https://esm.sh/@google/genai@1.1.0?target=deno&no-dts&deps=std@0.224.0";
 import { createPooledClient } from "../_shared/supabaseClient.ts";
+import { checkMemeSubscription } from "../_shared/memeSubscriptionCheck.ts";
 import { MistralService } from "../_shared/mistralService.ts";
 import { buildMemeRoastPrompt, STYLES } from "../_shared/memePromptBuilder.ts";
 import { generateAndUploadRawImage } from "../_shared/imageHelper.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
-const GOOGLE_API_KEY = Deno.env.get("GOOGLE-MEME");
 
 const CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
@@ -99,7 +98,15 @@ Deno.serve(async (req) => {
             });
         }
 
-        // TODO: gate on subscription (e.g. check user metadata or subscription table)
+        // Subscription + usage gate
+        const subCheck = await checkMemeSubscription(user.id, "images");
+        if (!subCheck.allowed) {
+            return new Response(JSON.stringify({ error: subCheck.error ?? "Subscription required" }), {
+                status: subCheck.statusCode ?? 403,
+                headers: CORS_HEADERS,
+            });
+        }
+
         const body = (await req.json()) as StudioGeneratorRequest;
         const { target_names, context_description, tone, optional_date, reference_image_base64 } = body;
 
@@ -130,42 +137,20 @@ Deno.serve(async (req) => {
             });
         }
 
-        let referenceDescription: string | null = null;
-        if (reference_image_base64 && GOOGLE_API_KEY) {
-            try {
-                const genAI = new GoogleGenAI({ apiKey: GOOGLE_API_KEY });
-                const visionResp = await genAI.models.generateContent({
-                    model: "gemini-2.0-flash",
-                    contents: [
-                        {
-                            role: "user",
-                            parts: [
-                                {
-                                    text: "Describe this product/item in precise detail for use in a photo prompt. Include: colours, materials, key visual features, style, brand elements visible. Be specific and visual. Max 2 sentences.",
-                                },
-                                {
-                                    inlineData: {
-                                        mimeType: "image/jpeg",
-                                        data: reference_image_base64,
-                                    },
-                                },
-                            ],
-                        },
-                    ],
-                });
-                const part = visionResp.candidates?.[0]?.content?.parts?.[0];
-                if (part && "text" in part && part.text) {
-                    referenceDescription = String(part.text).trim();
-                }
-            } catch (e) {
-                console.warn("Gemini Vision failed, continuing without reference:", e);
-            }
-        }
+        // Fetch the last 10 captions this user has generated for this tone so we can
+        // inject them as banned angles — forces the model away from its default punchlines.
+        const supabaseAdmin = createPooledClient();
+        const { data: pastMemes } = await supabaseAdmin
+            .from("studio_memes")
+            .select("caption")
+            .eq("user_id", user.id)
+            .eq("tone", normalizedTone)
+            .order("created_at", { ascending: false })
+            .limit(10);
 
-        const enrichedContext =
-            referenceDescription != null
-                ? `${context_description}\n\nReference item to incorporate into the scene: ${referenceDescription}`
-                : context_description;
+        const pastCaptions = (pastMemes ?? [])
+            .map((m: { caption: string }) => m.caption?.trim())
+            .filter(Boolean);
 
         let selectedStyle = STYLES.y2k;
         if (normalizedTone === "bold") selectedStyle = STYLES.fashion;
@@ -173,38 +158,49 @@ Deno.serve(async (req) => {
 
         const fullPrompt = buildMemeRoastPrompt(
             target_names,
-            enrichedContext,
+            context_description,
             optional_date?.trim() || undefined,
             normalizedTone,
-            selectedStyle
+            selectedStyle,
+            pastCaptions
         );
+
+        const SYSTEM_INSTRUCTION = `You are a sharp, irreverent meme writer with a finger on the pulse of internet culture. You think in subversions and unexpected angles — you never use the first obvious joke, you dig one level deeper to find the absurd truth that makes people say "why is this so accurate." You also write highly detailed, technically precise image prompts that produce cinematic, visually stunning results from AI image models. Return ONLY valid JSON — no markdown, no explanation, nothing else.`;
 
         const mistralService = new MistralService();
         const mistralResult = await retryWithBackoff(() =>
             mistralService.generateContent(
                 [{ role: "user", parts: [{ text: fullPrompt }] }],
-                undefined,
-                { model: "mistral-medium-latest", temperature: 1.0, maxOutputTokens: 2048 }
+                SYSTEM_INSTRUCTION,
+                {
+                    model: "mistral-medium-latest",
+                    temperature: 1.0,
+                    topP: 0.95,
+                    presencePenalty: 0.15,
+                    frequencyPenalty: 0.15,
+                    maxOutputTokens: 2048,
+                }
             )
         );
         const { caption, imagePrompt } = parseMistralResponse(mistralResult.text?.trim() || "");
 
-        const supabase = createPooledClient();
         const { publicUrl, imageId } = await generateAndUploadRawImage(
-            supabase,
+            supabaseAdmin,
             imagePrompt,
             user.id,
             "meme",
-            "studio-images"
+            "studio-images",
+            reference_image_base64,
+            "main subject"
         );
 
-        const { data: row, error: insertError } = await supabase
+        const { data: row, error: insertError } = await supabaseAdmin
             .from("studio_memes")
             .insert({
                 user_id: user.id,
                 target_names: target_names.trim(),
                 context_description: context_description.trim(),
-                reference_description: referenceDescription,
+                reference_description: reference_image_base64 ? "Provided via Vertex Reference Image" : null,
                 tone: normalizedTone,
                 image_url: publicUrl,
                 caption,
