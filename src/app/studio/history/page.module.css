@@ -169,20 +169,39 @@
 .carouselList {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
 }
 
 .carouselCard {
     border: 1px solid var(--border-color, rgba(0,0,0,0.08));
-    border-radius: 14px;
+    border-radius: 16px;
     overflow: hidden;
     background: var(--gray-50, #fafafa);
 }
 
+/* Scrollable slide strip */
 .carouselSlides {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 2px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.carouselSlides::-webkit-scrollbar {
+    display: none;
+}
+
+/* Each individual slide — fixed width so they stay readable */
+.carouselSlide {
+    flex: 0 0 180px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-color, rgba(0,0,0,0.07));
+}
+
+.carouselSlide:last-child {
+    border-right: none;
 }
 
 .carouselSlideThumb {
@@ -192,13 +211,13 @@
     display: block;
 }
 
-.carouselCaption {
-    padding: 0.65rem 0.9rem;
-    font-size: 0.8rem;
+.carouselSlideCaption {
+    padding: 0.55rem 0.7rem 0.6rem;
+    font-size: 0.78rem;
+    line-height: 1.4;
     color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    background: white;
+    flex: 1;
 }
 
 .reelsGrid {
@@ -268,8 +287,8 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .carouselSlides {
-        grid-template-columns: repeat(3, 1fr);
+    .carouselSlide {
+        flex: 0 0 140px;
     }
 }
 
@@ -279,7 +298,7 @@
         grid-template-columns: 1fr;
     }
 
-    .carouselSlides {
-        grid-template-columns: repeat(3, 1fr);
+    .carouselSlide {
+        flex: 0 0 120px;
     }
 }

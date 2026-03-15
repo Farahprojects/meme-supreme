@@ -319,18 +319,19 @@ export default function StudioHistoryPage() {
                                         <div key={carousel.carousel_id} className={styles.carouselCard}>
                                             <div className={styles.carouselSlides}>
                                                 {carousel.slides.map((slide) => (
-                                                    // eslint-disable-next-line @next/next/no-img-element
-                                                    <img
-                                                        key={slide.id}
-                                                        src={slide.image_url}
-                                                        alt={slide.caption ?? "Carousel slide"}
-                                                        className={styles.carouselSlideThumb}
-                                                    />
+                                                    <div key={slide.id} className={styles.carouselSlide}>
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img
+                                                            src={slide.image_url}
+                                                            alt={slide.caption ?? `Slide ${(slide.slide_index ?? 0) + 1}`}
+                                                            className={styles.carouselSlideThumb}
+                                                        />
+                                                        {slide.caption && (
+                                                            <p className={styles.carouselSlideCaption}>{slide.caption}</p>
+                                                        )}
+                                                    </div>
                                                 ))}
                                             </div>
-                                            {carousel.slides[0]?.caption && (
-                                                <p className={styles.carouselCaption}>{carousel.slides[0].caption}</p>
-                                            )}
                                         </div>
                                     ))}
                                 </div>
