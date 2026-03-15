@@ -15,6 +15,9 @@ interface StudioFormProps {
     setCarouselFormat?: (f: CarouselFormat) => void;
     carouselTone?: StudioTone;
     setCarouselTone?: (t: StudioTone) => void;
+    carouselRefPreview?: string | null;
+    carouselAddRefImage?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    carouselRemoveRefImage?: () => void;
     
     // Reels specific
     reelGoal?: ReelGoal;
@@ -33,6 +36,9 @@ interface StudioFormProps {
     selectedTones?: Set<StudioTone>;
     toggleTone?: (t: StudioTone) => void;
     setSelectedTones?: (s: Set<StudioTone>) => void;
+    imagesRefPreview?: string | null;
+    imagesAddRefImage?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    imagesRemoveRefImage?: () => void;
 }
 
 export function StudioForm({
@@ -41,12 +47,14 @@ export function StudioForm({
     context, setContext,
     carouselFormat, setCarouselFormat,
     carouselTone, setCarouselTone,
+    carouselRefPreview, carouselAddRefImage, carouselRemoveRefImage,
     reelGoal, setReelGoal,
     reelLength, setReelLength,
     reelRefPreviews, removeReelRefImage, addReelRefImage,
     reelScript, setReelScript,
     reelScriptStatus, handleWriteScript,
-    selectedTones, toggleTone, setSelectedTones
+    selectedTones, toggleTone, setSelectedTones,
+    imagesRefPreview, imagesAddRefImage, imagesRemoveRefImage,
 }: StudioFormProps) {
     return (
         <section className={styles.formSection}>
@@ -77,6 +85,108 @@ export function StudioForm({
                     className={styles.textarea}
                     rows={3}
                 />
+            </div>
+
+            {/* Reference image(s) — same style for all 3 modes */}
+            <div className={styles.reelRefRow}>
+                <span className={styles.reelRefLabel}>
+                    {studioMode === "reels" ? "Reference images (max 3)" : "Reference image"}
+                </span>
+                <div className={styles.reelRefSlots}>
+                    {studioMode === "images" && imagesAddRefImage && imagesRemoveRefImage && (
+                        <>
+                            {imagesRefPreview && (
+                                <div className={styles.reelRefSlot}>
+                                    <div className={styles.referencePreview}>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={imagesRefPreview} alt="" />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className={styles.reelRefRemove}
+                                        onClick={imagesRemoveRefImage}
+                                        aria-label="Remove"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            )}
+                            {!imagesRefPreview && (
+                                <label className={styles.fileLabel}>
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        onChange={imagesAddRefImage}
+                                        className={styles.fileInputHidden}
+                                    />
+                                    + Image
+                                </label>
+                            )}
+                        </>
+                    )}
+                    {studioMode === "carousel" && carouselAddRefImage && carouselRemoveRefImage && (
+                        <>
+                            {carouselRefPreview && (
+                                <div className={styles.reelRefSlot}>
+                                    <div className={styles.referencePreview}>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={carouselRefPreview} alt="" />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className={styles.reelRefRemove}
+                                        onClick={carouselRemoveRefImage}
+                                        aria-label="Remove"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            )}
+                            {!carouselRefPreview && (
+                                <label className={styles.fileLabel}>
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        onChange={carouselAddRefImage}
+                                        className={styles.fileInputHidden}
+                                    />
+                                    + Image
+                                </label>
+                            )}
+                        </>
+                    )}
+                    {studioMode === "reels" && reelRefPreviews !== undefined && removeReelRefImage && addReelRefImage && (
+                        <>
+                            {reelRefPreviews.slice(0, MAX_REEL_REF_IMAGES).map((preview, i) => (
+                                <div key={i} className={styles.reelRefSlot}>
+                                    <div className={styles.referencePreview}>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={preview} alt="" />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className={styles.reelRefRemove}
+                                        onClick={() => removeReelRefImage(i)}
+                                        aria-label="Remove"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                            {(reelRefPreviews?.length ?? 0) < MAX_REEL_REF_IMAGES && (
+                                <label className={styles.fileLabel}>
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        onChange={addReelRefImage}
+                                        className={styles.fileInputHidden}
+                                    />
+                                    + Image
+                                </label>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
 
             <div className={styles.modeTabs}>
@@ -154,38 +264,6 @@ export function StudioForm({
                         >
                             15s
                         </button>
-                    </div>
-                    <div className={styles.reelRefRow}>
-                        <span className={styles.reelRefLabel}>Reference images (max 3)</span>
-                        <div className={styles.reelRefSlots}>
-                            {reelRefPreviews?.slice(0, MAX_REEL_REF_IMAGES).map((preview, i) => (
-                                <div key={i} className={styles.reelRefSlot}>
-                                    <div className={styles.referencePreview}>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={preview} alt="" />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className={styles.reelRefRemove}
-                                        onClick={() => removeReelRefImage(i)}
-                                        aria-label="Remove"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-                            ))}
-                            {(reelRefPreviews?.length ?? 0) < MAX_REEL_REF_IMAGES && (
-                                <label className={styles.fileLabel}>
-                                    <input
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        onChange={addReelRefImage}
-                                        className={styles.fileInputHidden}
-                                    />
-                                    + Image
-                                </label>
-                            )}
-                        </div>
                     </div>
                     <button
                         type="button"

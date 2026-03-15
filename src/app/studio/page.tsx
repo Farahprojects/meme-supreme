@@ -111,6 +111,9 @@ export default function StudioPage() {
                 // Mode-specific props
                 carouselFormat={carousel.carouselFormat} setCarouselFormat={carousel.setCarouselFormat}
                 carouselTone={carousel.carouselTone} setCarouselTone={carousel.setCarouselTone}
+                carouselRefPreview={carousel.refPreview}
+                carouselAddRefImage={carousel.addRefImage}
+                carouselRemoveRefImage={carousel.removeRefImage}
                 
                 reelGoal={reels.reelGoal} setReelGoal={reels.setReelGoal}
                 reelLength={reels.reelLength} setReelLength={reels.setReelLength}
@@ -124,6 +127,9 @@ export default function StudioPage() {
                 selectedTones={form.selectedTones}
                 toggleTone={form.toggleTone}
                 setSelectedTones={form.setSelectedTones}
+                imagesRefPreview={images.refPreview}
+                imagesAddRefImage={images.addRefImage}
+                imagesRemoveRefImage={images.removeRefImage}
             />
 
             {form.studioMode === "images" && (

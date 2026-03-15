@@ -60,6 +60,7 @@ interface CarouselRequest {
     format: "teach" | "story" | "authority";
     context_description: string;
     tone: string;
+    reference_image_base64?: string;
 }
 
 Deno.serve(async (req) => {
@@ -107,7 +108,7 @@ Deno.serve(async (req) => {
         }
 
         const body = (await req.json()) as CarouselRequest;
-        const { format, context_description, tone } = body;
+        const { format, context_description, tone, reference_image_base64 } = body;
 
         if (!format || !["teach", "story", "authority"].includes(format)) {
             return new Response(JSON.stringify({ error: "format must be teach, story, or authority" }), {
@@ -195,8 +196,8 @@ Deno.serve(async (req) => {
                     user.id,
                     "meme",
                     "studio-images",
-                    undefined,
-                    undefined
+                    reference_image_base64,
+                    "main subject"
                 )
             );
 

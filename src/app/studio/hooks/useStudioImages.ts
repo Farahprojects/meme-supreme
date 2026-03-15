@@ -4,6 +4,17 @@ import { User } from "@supabase/supabase-js";
 import { StudioTone } from "@/components/StudioMemeCard";
 import { MemeResult, ResultState } from "../types";
 
+const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const dataUrl = reader.result as string;
+            resolve(dataUrl.split(",")[1] ?? "");
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+
 export function useStudioImages(
     user: User | null,
     targetNames: string,
@@ -21,11 +32,28 @@ export function useStudioImages(
         sweet: "error",
         bold: "error",
     });
+    const [refPreview, setRefPreview] = useState<string | null>(null);
+    const [refImage, setRefImage] = useState<File | null>(null);
+
+    const addRefImage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file?.type.startsWith("image/")) return;
+        setRefImage(file);
+        setRefPreview(URL.createObjectURL(file));
+        e.target.value = "";
+    }, []);
+
+    const removeRefImage = useCallback(() => {
+        if (refPreview) URL.revokeObjectURL(refPreview);
+        setRefImage(null);
+        setRefPreview(null);
+    }, [refPreview]);
 
     const fetchOneTone = useCallback(
         async (tone: StudioTone) => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session?.access_token) throw new Error("Not signed in");
+            const reference_image_base64 = refImage ? await fileToBase64(refImage) : undefined;
             const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/studio-generator`;
             const res = await fetch(url, {
                 method: "POST",
@@ -39,13 +67,14 @@ export function useStudioImages(
                     context_description: context.trim(),
                     tone,
                     optional_date: optionalDate.trim() || undefined,
+                    reference_image_base64,
                 }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error ?? "Request failed");
             return data as MemeResult;
         },
-        [targetNames, context, optionalDate]
+        [targetNames, context, optionalDate, refImage]
     );
 
     const handleGenerate = useCallback(async (isSubscribed: boolean, imagesUsed: number, imagesLimit: number) => {
@@ -150,6 +179,9 @@ export function useStudioImages(
         handleRegenerate,
         handleEditImage,
         handleCaptionChange,
-        handleNamesChange
+        handleNamesChange,
+        refPreview,
+        addRefImage,
+        removeRefImage,
     };
 }
