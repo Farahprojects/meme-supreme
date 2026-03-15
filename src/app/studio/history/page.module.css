@@ -141,10 +141,64 @@
     margin: 0 auto;
 }
 
+/* Date group container — space between groups */
+.dateGroup {
+    margin-bottom: 2.5rem;
+}
+
+.dateGroup:last-child {
+    margin-bottom: 0;
+}
+
+.dateLabel {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.85rem;
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
+}
+
+/* Carousel list — one card per carousel set */
+.carouselList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.carouselCard {
+    border: 1px solid var(--border-color, rgba(0,0,0,0.08));
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--gray-50, #fafafa);
+}
+
+.carouselSlides {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+}
+
+.carouselSlideThumb {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+}
+
+.carouselCaption {
+    padding: 0.65rem 0.9rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .reelsGrid {
@@ -213,11 +267,19 @@
     .reelsGrid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .carouselSlides {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 @media (max-width: 500px) {
     .grid,
     .reelsGrid {
         grid-template-columns: 1fr;
+    }
+
+    .carouselSlides {
+        grid-template-columns: repeat(3, 1fr);
     }
 }

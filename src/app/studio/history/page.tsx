@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +18,8 @@ interface HistoryItem {
     target_names: string | null;
     context_description: string | null;
     created_at: string;
+    carousel_id: string | null;
+    slide_index: number | null;
     text_style?: { font?: string; size?: string; allCaps?: boolean } | null;
 }
 
@@ -29,7 +31,36 @@ interface VideoItem {
     created_at: string;
 }
 
-type HistoryTab = "images" | "reels";
+interface CarouselGroup {
+    carousel_id: string;
+    created_at: string;
+    slides: HistoryItem[];
+}
+
+type HistoryTab = "images" | "carousels" | "reels";
+
+// Returns "Today", "Yesterday", or "12 Mar" style label
+function formatDateLabel(isoString: string): string {
+    const date = new Date(isoString);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today.getTime() - 86400000);
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    if (d.getTime() === today.getTime()) return "Today";
+    if (d.getTime() === yesterday.getTime()) return "Yesterday";
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+// Groups items into [{ label, items }] in chronological order (newest first)
+function groupByDate<T extends { created_at: string }>(items: T[]): { label: string; items: T[] }[] {
+    const map = new Map<string, T[]>();
+    for (const item of items) {
+        const label = formatDateLabel(item.created_at);
+        if (!map.has(label)) map.set(label, []);
+        map.get(label)!.push(item);
+    }
+    return Array.from(map.entries()).map(([label, items]) => ({ label, items }));
+}
 
 export default function StudioHistoryPage() {
     const router = useRouter();
@@ -51,7 +82,7 @@ export default function StudioHistoryPage() {
         const [memesRes, videosRes] = await Promise.all([
             supabase
                 .from("studio_memes")
-                .select("id, image_url, caption, names, tone, target_names, context_description, created_at, text_style")
+                .select("id, image_url, caption, names, tone, target_names, context_description, created_at, text_style, carousel_id, slide_index")
                 .order("created_at", { ascending: false }),
             supabase
                 .from("studio_videos")
@@ -64,6 +95,28 @@ export default function StudioHistoryPage() {
     }, [user]);
 
     useEffect(() => { if (user) fetchAll(); }, [user, fetchAll]);
+
+    // Split images vs carousel slides
+    const singleImages = useMemo(() => items.filter((i) => !i.carousel_id), [items]);
+
+    const carouselGroups = useMemo<CarouselGroup[]>(() => {
+        const map = new Map<string, HistoryItem[]>();
+        for (const item of items) {
+            if (!item.carousel_id) continue;
+            if (!map.has(item.carousel_id)) map.set(item.carousel_id, []);
+            map.get(item.carousel_id)!.push(item);
+        }
+        return Array.from(map.entries())
+            .map(([carousel_id, slides]) => ({
+                carousel_id,
+                created_at: slides[0]?.created_at ?? "",
+                slides: [...slides].sort((a, b) => (a.slide_index ?? 0) - (b.slide_index ?? 0)),
+            }))
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }, [items]);
+
+    const imageDateGroups = useMemo(() => groupByDate(singleImages), [singleImages]);
+    const carouselDateGroups = useMemo(() => groupByDate(carouselGroups), [carouselGroups]);
 
     const patchItem = useCallback((id: string, patch: Partial<HistoryItem>) => {
         setItems((prev) => prev.map((h) => (h.id === id ? { ...h, ...patch } : h)));
@@ -170,7 +223,7 @@ export default function StudioHistoryPage() {
         return <div className={styles.wrap}><div className={styles.loading}>Loading…</div></div>;
     }
 
-    const totalCount = tab === "images" ? items.length : videos.length;
+    const totalCount = tab === "images" ? singleImages.length : tab === "carousels" ? carouselGroups.length : videos.length;
 
     return (
         <div className={styles.wrap}>
@@ -194,7 +247,15 @@ export default function StudioHistoryPage() {
                         onClick={() => setTab("images")}
                     >
                         Images
-                        {items.length > 0 && <span className={styles.tabCount}>{items.length}</span>}
+                        {singleImages.length > 0 && <span className={styles.tabCount}>{singleImages.length}</span>}
+                    </button>
+                    <button
+                        type="button"
+                        className={`${styles.tabBtn} ${tab === "carousels" ? styles.tabBtnActive : ""}`}
+                        onClick={() => setTab("carousels")}
+                    >
+                        Carousels
+                        {carouselGroups.length > 0 && <span className={styles.tabCount}>{carouselGroups.length}</span>}
                     </button>
                     <button
                         type="button"
@@ -210,31 +271,71 @@ export default function StudioHistoryPage() {
             {fetching ? (
                 <div className={styles.loading}>Loading…</div>
             ) : tab === "images" ? (
-                items.length === 0 ? (
+                singleImages.length === 0 ? (
                     <div className={styles.empty}>
                         <p>No images yet. Head to the Studio to generate your first meme.</p>
                         <Link href="/studio" className={styles.emptyBtn}>Go to Studio</Link>
                     </div>
                 ) : (
                     <section className={styles.gridSection}>
-                        <div className={styles.grid}>
-                            {items.map((item) => (
-                                <StudioMemeCard
-                                    key={item.id}
-                                    meme_id={item.id}
-                                    image_url={item.image_url}
-                                    caption={item.caption}
-                                    names={item.names}
-                                    tone={item.tone}
-                                    initialTextStyle={item.text_style ?? undefined}
-                                    loading={loadingIds.has(item.id)}
-                                    onRegenerate={() => handleRegenerate(item)}
-                                    onDownload={handleDownload}
-                                    onSaveTextStyle={handleSaveTextStyle}
-                                    onEditImage={(instruction, productBase64) => handleEditImage(item, instruction, productBase64)}
-                                />
-                            ))}
-                        </div>
+                        {imageDateGroups.map(({ label, items: groupItems }) => (
+                            <div key={label} className={styles.dateGroup}>
+                                <p className={styles.dateLabel}>{label}</p>
+                                <div className={styles.grid}>
+                                    {groupItems.map((item) => (
+                                        <StudioMemeCard
+                                            key={item.id}
+                                            meme_id={item.id}
+                                            image_url={item.image_url}
+                                            caption={item.caption}
+                                            names={item.names}
+                                            tone={item.tone}
+                                            initialTextStyle={item.text_style ?? undefined}
+                                            loading={loadingIds.has(item.id)}
+                                            onRegenerate={() => handleRegenerate(item)}
+                                            onDownload={handleDownload}
+                                            onSaveTextStyle={handleSaveTextStyle}
+                                            onEditImage={(instruction, productBase64) => handleEditImage(item, instruction, productBase64)}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </section>
+                )
+            ) : tab === "carousels" ? (
+                carouselGroups.length === 0 ? (
+                    <div className={styles.empty}>
+                        <p>No carousels yet. Head to the Studio Carousel tab to create your first one.</p>
+                        <Link href="/studio" className={styles.emptyBtn}>Go to Studio</Link>
+                    </div>
+                ) : (
+                    <section className={styles.gridSection}>
+                        {carouselDateGroups.map(({ label, items: groupCarousels }) => (
+                            <div key={label} className={styles.dateGroup}>
+                                <p className={styles.dateLabel}>{label}</p>
+                                <div className={styles.carouselList}>
+                                    {groupCarousels.map((carousel) => (
+                                        <div key={carousel.carousel_id} className={styles.carouselCard}>
+                                            <div className={styles.carouselSlides}>
+                                                {carousel.slides.map((slide) => (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img
+                                                        key={slide.id}
+                                                        src={slide.image_url}
+                                                        alt={slide.caption ?? "Carousel slide"}
+                                                        className={styles.carouselSlideThumb}
+                                                    />
+                                                ))}
+                                            </div>
+                                            {carousel.slides[0]?.caption && (
+                                                <p className={styles.carouselCaption}>{carousel.slides[0].caption}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
                     </section>
                 )
             ) : (
