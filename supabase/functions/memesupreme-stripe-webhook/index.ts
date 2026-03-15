@@ -152,6 +152,58 @@ Deno.serve(async (req) => {
         break;
       }
 
+      // Reset usage counters when a subscription renews (new billing period starts)
+      case 'invoice.payment_succeeded': {
+        const inv = event.data.object as any;
+        // Only reset on a recurring cycle, not on the first payment
+        if (inv.billing_reason === 'subscription_cycle' && inv.subscription) {
+          console.log(`[MemeSupreme Webhook] Billing cycle renewal for subscription ${inv.subscription} — resetting usage counters`);
+          const { error: resetErr } = await supabase
+            .from('subscriptions')
+            .update({
+              images_used: 0,
+              reels_used: 0,
+              current_period_start: new Date(inv.period_start * 1000).toISOString(),
+              current_period_end:   new Date(inv.period_end   * 1000).toISOString(),
+            })
+            .eq('stripe_subscription_id', inv.subscription);
+          if (resetErr) console.error('[MemeSupreme Webhook] Failed to reset usage counters:', resetErr);
+          else console.log(`[MemeSupreme Webhook] Usage counters reset for subscription ${inv.subscription}`);
+        }
+        break;
+      }
+
+      // Keep period dates and status in sync on any subscription change
+      case 'customer.subscription.updated': {
+        const stripeSub = event.data.object as any;
+        console.log(`[MemeSupreme Webhook] Subscription updated ${stripeSub.id} — syncing period and status`);
+        const updatePayload: Record<string, unknown> = {
+          status: stripeSub.status,
+          current_period_start: new Date(stripeSub.current_period_start * 1000).toISOString(),
+          current_period_end:   new Date(stripeSub.current_period_end   * 1000).toISOString(),
+        };
+        // If the period start changed, it's a renewal — reset counters
+        const { data: existingRow } = await supabase
+          .from('subscriptions')
+          .select('current_period_start')
+          .eq('stripe_subscription_id', stripeSub.id)
+          .single();
+        if (
+          existingRow?.current_period_start &&
+          existingRow.current_period_start !== updatePayload.current_period_start
+        ) {
+          updatePayload.images_used = 0;
+          updatePayload.reels_used  = 0;
+          console.log(`[MemeSupreme Webhook] Period changed — also resetting counters`);
+        }
+        const { error: updateErr } = await supabase
+          .from('subscriptions')
+          .update(updatePayload)
+          .eq('stripe_subscription_id', stripeSub.id);
+        if (updateErr) console.error('[MemeSupreme Webhook] Failed to update subscription:', updateErr);
+        break;
+      }
+
       default:
         console.log(`[MemeSupreme Webhook] Unhandled event type: ${event.type}`);
     }

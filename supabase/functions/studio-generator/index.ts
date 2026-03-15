@@ -217,6 +217,15 @@ Deno.serve(async (req) => {
             });
         }
 
+        // Increment usage counter — non-blocking, fail silently
+        supabaseAdmin.rpc("increment_subscription_counter", {
+            p_user_id: user.id,
+            p_column: "images_used",
+            p_amount: 1,
+        }).then(({ error: rpcErr }) => {
+            if (rpcErr) console.error("increment_subscription_counter error:", rpcErr);
+        });
+
         return new Response(
             JSON.stringify({
                 meme_id: row.id,

@@ -180,7 +180,18 @@ Deno.serve(async (req) => {
                     description: description ?? null,
                     goal: goal ?? null,
                 });
-            if (insertError) console.error("Failed to save video to studio_videos:", insertError);
+            if (insertError) {
+                console.error("Failed to save video to studio_videos:", insertError);
+            } else {
+                // Increment usage counter — non-blocking, fail silently
+                supabaseAdmin.rpc("increment_subscription_counter", {
+                    p_user_id: user.id,
+                    p_column: "reels_used",
+                    p_amount: 1,
+                }).then(({ error: rpcErr }) => {
+                    if (rpcErr) console.error("increment_subscription_counter error:", rpcErr);
+                });
+            }
         }
 
         return new Response(

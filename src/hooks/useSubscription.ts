@@ -46,10 +46,10 @@ export function useSubscription(): SubscriptionState {
         async function fetchSubscription() {
             setState((prev) => ({ ...prev, loading: true }));
 
-            // 1. Fetch subscription row
+            // 1. Fetch subscription row — usage counters included, no COUNT queries needed
             const { data: sub } = await supabase
                 .from("subscriptions")
-                .select("status, current_period_start, current_period_end")
+                .select("status, current_period_start, current_period_end, images_used, reels_used")
                 .eq("user_id", user!.id)
                 .single();
 
@@ -79,30 +79,12 @@ export function useSubscription(): SubscriptionState {
                 return;
             }
 
-            // 2. Count images used this period
-            const { count: imagesCount } = await supabase
-                .from("studio_memes")
-                .select("id", { count: "exact", head: true })
-                .eq("user_id", user!.id)
-                .gte("created_at", periodStart.toISOString());
-
-            if (cancelled) return;
-
-            // 3. Count reels used this period
-            const { count: reelsCount } = await supabase
-                .from("studio_videos")
-                .select("id", { count: "exact", head: true })
-                .eq("user_id", user!.id)
-                .gte("created_at", periodStart.toISOString());
-
-            if (cancelled) return;
-
             setState({
                 isSubscribed: true,
                 status: sub.status,
-                imagesUsed: imagesCount ?? 0,
+                imagesUsed: sub.images_used ?? 0,
                 imagesLimit: IMAGES_LIMIT,
-                reelsUsed: reelsCount ?? 0,
+                reelsUsed: sub.reels_used ?? 0,
                 reelsLimit: REELS_LIMIT,
                 periodEnd,
                 periodStart,

@@ -221,6 +221,15 @@ Deno.serve(async (req) => {
             resultSlides.push({ slide_index: i, slide_text: slide.slide_text, image_url: publicUrl });
         }
 
+        // Increment usage counter by 6 (one per slide) — non-blocking, fail silently
+        supabase.rpc("increment_subscription_counter", {
+            p_user_id: user.id,
+            p_column: "images_used",
+            p_amount: 6,
+        }).then(({ error: rpcErr }) => {
+            if (rpcErr) console.error("increment_subscription_counter error:", rpcErr);
+        });
+
         return new Response(
             JSON.stringify({
                 carousel_id: carouselId,

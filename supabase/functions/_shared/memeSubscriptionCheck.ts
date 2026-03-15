@@ -26,10 +26,10 @@ export async function checkMemeSubscription(
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // 1. Check subscription status
+  // 1. Check subscription status and read usage counters in one query
   const { data: sub, error: subErr } = await adminClient
     .from("subscriptions")
-    .select("status, current_period_start, current_period_end")
+    .select("status, current_period_start, current_period_end, images_used, reels_used")
     .eq("user_id", userId)
     .single();
 
@@ -50,38 +50,15 @@ export async function checkMemeSubscription(
     return { allowed: false, error: "Subscription period has ended", statusCode: 403 };
   }
 
-  // 2. Count usage for the current period
+  // 2. Check usage counters (no COUNT queries — counters are maintained by edge functions)
   if (resourceType === "images") {
-    const { count, error: countErr } = await adminClient
-      .from("studio_memes")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .gte("created_at", sub.current_period_start);
-
-    if (countErr) {
-      console.error("[memeSubscriptionCheck] Count error:", countErr);
-      // Fail open — don't block generation due to a count error
-      return { allowed: true };
-    }
-
-    if ((count ?? 0) + requiredSlots > IMAGES_LIMIT) {
+    if ((sub.images_used ?? 0) + requiredSlots > IMAGES_LIMIT) {
       return { allowed: false, error: `Monthly image limit of ${IMAGES_LIMIT} reached`, statusCode: 403 };
     }
   }
 
   if (resourceType === "reels") {
-    const { count, error: countErr } = await adminClient
-      .from("studio_videos")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .gte("created_at", sub.current_period_start);
-
-    if (countErr) {
-      console.error("[memeSubscriptionCheck] Reel count error:", countErr);
-      return { allowed: true };
-    }
-
-    if ((count ?? 0) >= REELS_LIMIT) {
+    if ((sub.reels_used ?? 0) >= REELS_LIMIT) {
       return { allowed: false, error: `Monthly reel limit of ${REELS_LIMIT} reached`, statusCode: 403 };
     }
   }
