@@ -165,59 +165,21 @@
     gap: 1.5rem;
 }
 
-/* Carousel list — one card per carousel set */
-.carouselList {
+/* Carousel sets — each set uses the same .grid, just stacked with a divider */
+.carouselSetList {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
-.carouselCard {
-    border: 1px solid var(--border-color, rgba(0,0,0,0.08));
-    border-radius: 16px;
-    overflow: hidden;
-    background: var(--gray-50, #fafafa);
+.carouselSet {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.07));
 }
 
-/* Scrollable slide strip */
-.carouselSlides {
-    display: flex;
-    gap: 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-}
-
-.carouselSlides::-webkit-scrollbar {
-    display: none;
-}
-
-/* Each individual slide — fixed width so they stay readable */
-.carouselSlide {
-    flex: 0 0 180px;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border-color, rgba(0,0,0,0.07));
-}
-
-.carouselSlide:last-child {
-    border-right: none;
-}
-
-.carouselSlideThumb {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    display: block;
-}
-
-.carouselSlideCaption {
-    padding: 0.55rem 0.7rem 0.6rem;
-    font-size: 0.78rem;
-    line-height: 1.4;
-    color: var(--text-secondary);
-    background: white;
-    flex: 1;
+.carouselSet:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .reelsGrid {
@@ -286,19 +248,11 @@
     .reelsGrid {
         grid-template-columns: repeat(2, 1fr);
     }
-
-    .carouselSlide {
-        flex: 0 0 140px;
-    }
 }
 
 @media (max-width: 500px) {
     .grid,
     .reelsGrid {
         grid-template-columns: 1fr;
-    }
-
-    .carouselSlide {
-        flex: 0 0 120px;
     }
 }

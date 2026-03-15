@@ -314,22 +314,25 @@ export default function StudioHistoryPage() {
                         {carouselDateGroups.map(({ label, items: groupCarousels }) => (
                             <div key={label} className={styles.dateGroup}>
                                 <p className={styles.dateLabel}>{label}</p>
-                                <div className={styles.carouselList}>
+                                <div className={styles.carouselSetList}>
                                     {groupCarousels.map((carousel) => (
-                                        <div key={carousel.carousel_id} className={styles.carouselCard}>
-                                            <div className={styles.carouselSlides}>
+                                        <div key={carousel.carousel_id} className={styles.carouselSet}>
+                                            <div className={styles.grid}>
                                                 {carousel.slides.map((slide) => (
-                                                    <div key={slide.id} className={styles.carouselSlide}>
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img
-                                                            src={slide.image_url}
-                                                            alt={slide.caption ?? `Slide ${(slide.slide_index ?? 0) + 1}`}
-                                                            className={styles.carouselSlideThumb}
-                                                        />
-                                                        {slide.caption && (
-                                                            <p className={styles.carouselSlideCaption}>{slide.caption}</p>
-                                                        )}
-                                                    </div>
+                                                    <StudioMemeCard
+                                                        key={slide.id}
+                                                        meme_id={slide.id}
+                                                        image_url={slide.image_url}
+                                                        caption={slide.caption}
+                                                        names={slide.names}
+                                                        tone={slide.tone}
+                                                        initialTextStyle={slide.text_style ?? undefined}
+                                                        loading={loadingIds.has(slide.id)}
+                                                        onRegenerate={() => handleRegenerate(slide)}
+                                                        onDownload={handleDownload}
+                                                        onSaveTextStyle={handleSaveTextStyle}
+                                                        onEditImage={(instruction, productBase64) => handleEditImage(slide, instruction, productBase64)}
+                                                    />
                                                 ))}
                                             </div>
                                         </div>
