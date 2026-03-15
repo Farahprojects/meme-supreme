@@ -19,6 +19,7 @@ export interface HistoryItem {
     target_names: string | null;
     context_description: string | null;
     created_at: string;
+    carousel_id: string | null;
     text_style?: { font?: string; size?: string; allCaps?: boolean } | null;
 }
 

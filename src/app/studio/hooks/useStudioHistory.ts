@@ -15,7 +15,7 @@ export function useStudioHistory(user: User | null) {
         setHistoryFetching(true);
         const { data } = await supabase
             .from("studio_memes")
-            .select("id, image_url, caption, names, tone, target_names, context_description, created_at, text_style")
+            .select("id, image_url, caption, names, tone, target_names, context_description, created_at, carousel_id, text_style")
             .order("created_at", { ascending: false })
             .limit(60);
         setHistory((data ?? []) as HistoryItem[]);

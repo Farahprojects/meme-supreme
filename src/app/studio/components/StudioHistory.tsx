@@ -4,6 +4,19 @@ import StudioMemeCard, { TextStyle } from "@/components/StudioMemeCard";
 import { HistoryItem } from "../types";
 import { HISTORY_DEFAULT_SHOW } from "../constants";
 
+// Never cut mid-carousel: if the Nth item belongs to a carousel,
+// extend the slice to include all remaining slides of that carousel.
+function sliceComplete(items: HistoryItem[], limit: number): HistoryItem[] {
+    if (items.length <= limit) return items;
+    const sliced = items.slice(0, limit);
+    const lastItem = sliced[sliced.length - 1];
+    if (lastItem?.carousel_id) {
+        const extra = items.slice(limit).filter((i) => i.carousel_id === lastItem.carousel_id);
+        return [...sliced, ...extra];
+    }
+    return sliced;
+}
+
 interface StudioHistoryProps {
     history: HistoryItem[];
     historyFetching: boolean;
@@ -53,7 +66,7 @@ export function StudioHistory({
                 <p className={styles.historyEmpty}>Loading history…</p>
             ) : (
                 <div className={styles.grid}>
-                    {(showAllHistory ? history : history.slice(0, HISTORY_DEFAULT_SHOW)).map((item) => (
+                    {(showAllHistory ? history : sliceComplete(history, HISTORY_DEFAULT_SHOW)).map((item) => (
                         <StudioMemeCard
                             key={item.id}
                             meme_id={item.id}
