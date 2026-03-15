@@ -65,3 +65,8 @@
 .actionBtn svg {
     flex-shrink: 0;
 }
+
+.actionBtnDelete:hover {
+    background: rgba(229, 62, 62, 0.15);
+    color: #e53e3e;
+}
