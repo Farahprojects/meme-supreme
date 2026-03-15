@@ -4,6 +4,26 @@ import { User } from "@supabase/supabase-js";
 import { HistoryItem, MemeResult } from "../types";
 import { StudioTone, TextStyle } from "@/components/StudioMemeCard";
 
+// Preserve the overall newest-first order but ensure slides within each
+// carousel are in slide_index ascending order (slide 1 first, not last).
+function sortCarouselSlides(items: HistoryItem[]): HistoryItem[] {
+    const processed = new Set<string>();
+    const result: HistoryItem[] = [];
+    for (const item of items) {
+        if (item.carousel_id) {
+            if (processed.has(item.carousel_id)) continue;
+            const group = items
+                .filter((i) => i.carousel_id === item.carousel_id)
+                .sort((a, b) => (a.slide_index ?? 0) - (b.slide_index ?? 0));
+            result.push(...group);
+            processed.add(item.carousel_id);
+        } else {
+            result.push(item);
+        }
+    }
+    return result;
+}
+
 export function useStudioHistory(user: User | null) {
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [historyFetching, setHistoryFetching] = useState(false);
@@ -15,10 +35,10 @@ export function useStudioHistory(user: User | null) {
         setHistoryFetching(true);
         const { data } = await supabase
             .from("studio_memes")
-            .select("id, image_url, caption, names, tone, target_names, context_description, created_at, carousel_id, text_style")
+            .select("id, image_url, caption, names, tone, target_names, context_description, created_at, carousel_id, slide_index, text_style")
             .order("created_at", { ascending: false })
             .limit(60);
-        setHistory((data ?? []) as HistoryItem[]);
+        setHistory(sortCarouselSlides((data ?? []) as HistoryItem[]));
         setHistoryFetching(false);
     }, [user]);
 
